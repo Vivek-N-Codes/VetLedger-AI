@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/owner_ledger.dart';
 import '../services/api_service.dart';
+import '../services/app_data_sync.dart';
 import '../theme/app_theme.dart';
 
 class LedgerScreen extends StatefulWidget {
@@ -25,10 +26,12 @@ class _LedgerScreenState extends State<LedgerScreen> {
   void initState() {
     super.initState();
     _loadOwners();
+    AppDataSync.changeNotifier.addListener(_loadOwners);
   }
 
   @override
   void dispose() {
+    AppDataSync.changeNotifier.removeListener(_loadOwners);
     _searchController.dispose();
     super.dispose();
   }
@@ -208,6 +211,7 @@ class _LedgerScreenState extends State<LedgerScreen> {
                     _showReceiptDialog(receipt);
                     _loadOwners();
                     _loadOwnerDetail(owner.ownerId);
+                    AppDataSync.notifyDataChanged();
                   } catch (e) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text(e.toString()), backgroundColor: AppTheme.alertRed),

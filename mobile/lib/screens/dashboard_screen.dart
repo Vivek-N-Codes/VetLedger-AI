@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import '../models/dashboard_stats.dart';
 import '../services/api_service.dart';
+import '../services/app_data_sync.dart';
 import '../theme/app_theme.dart';
 import '../widgets/disclaimer_banner.dart';
 import '../widgets/status_badge.dart';
 import 'animal_list_screen.dart';
 import 'animal_profile_screen.dart';
 import 'cluster_investigation_screen.dart';
+import 'farms_screen.dart';
 import 'surveillance_dashboard_screen.dart';
 import 'visit_entry_screen.dart';
 
@@ -26,12 +28,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
     _loadStats();
+    AppDataSync.changeNotifier.addListener(_loadStats);
+  }
+
+  @override
+  void dispose() {
+    AppDataSync.changeNotifier.removeListener(_loadStats);
+    super.dispose();
   }
 
   void _loadStats() {
-    setState(() {
-      _statsFuture = ApiService.getDashboardStats();
-    });
+    if (mounted) {
+      setState(() {
+        _statsFuture = ApiService.getDashboardStats();
+      });
+    }
   }
 
   @override
@@ -232,6 +243,146 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   ),
                   const SizedBox(height: 18),
+                ],
+
+                // Live Farm Livestock Distribution (Dynamic farm herd breakdown)
+                if (stats.farmStats.isNotEmpty) ...[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Live Farm Livestock Distribution',
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                      ),
+                      TextButton.icon(
+                        icon: const Icon(Icons.arrow_forward_rounded, size: 16),
+                        label: const Text('All Farms'),
+                        onPressed: () {
+                          if (widget.onNavigateTab != null) {
+                            widget.onNavigateTab!(2);
+                          } else {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const FarmsScreen()));
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Card(
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: const BorderSide(color: AppTheme.borderSubtle),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.agriculture_rounded, color: AppTheme.primaryTeal, size: 18),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'Dynamic Herd Counts per Farm (${stats.farmStats.length} Total Farms)',
+                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textSecondary),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const Divider(height: 16),
+                          ...stats.farmStats.map((f) {
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 5),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          f.farmName,
+                                          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppTheme.textPrimary),
+                                        ),
+                                        Text(
+                                          '${f.villageName}${f.ownerName.isNotEmpty ? ' • ${f.ownerName}' : ''}',
+                                          style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.primaryLight,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(Icons.pets_rounded, size: 12, color: AppTheme.primaryTeal),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          '${f.animalCount} animals',
+                                          style: const TextStyle(
+                                            color: AppTheme.primaryTeal,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
+                // Village Breakdown
+                if (stats.villageStats.isNotEmpty) ...[
+                  Row(
+                    children: [
+                      const Icon(Icons.location_city_rounded, color: AppTheme.primaryTeal, size: 18),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Village Animal Breakdown',
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: stats.villageStats.map((vs) {
+                        return Container(
+                          margin: const EdgeInsets.only(right: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: AppTheme.borderSubtle),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(vs.villageName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                              const SizedBox(height: 2),
+                              Text('${vs.animalCount} animals • ${vs.farmCount} farms', style: const TextStyle(fontSize: 11, color: AppTheme.textMuted)),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                 ],
 
                 // Quick Navigation Action Row

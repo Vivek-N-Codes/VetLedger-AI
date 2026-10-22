@@ -8,6 +8,7 @@ class DashboardStats {
   final int activeSurveillanceAlerts;
   final List<VisitModel> recentVisits;
   final List<VillageStat> villageStats;
+  final List<FarmStat> farmStats;
   final Map<String, int> topSymptoms;
   final String syntheticDataNotice;
 
@@ -19,6 +20,7 @@ class DashboardStats {
     required this.activeSurveillanceAlerts,
     required this.recentVisits,
     required this.villageStats,
+    this.farmStats = const [],
     required this.topSymptoms,
     required this.syntheticDataNotice,
   });
@@ -38,6 +40,13 @@ class DashboardStats {
           .toList();
     }
 
+    List<FarmStat> fStats = [];
+    if (json['farmStats'] != null) {
+      fStats = (json['farmStats'] as List)
+          .map((fs) => FarmStat.fromJson(fs as Map<String, dynamic>))
+          .toList();
+    }
+
     Map<String, int> syms = {};
     if (json['topSymptoms'] != null) {
       (json['topSymptoms'] as Map<String, dynamic>).forEach((k, v) {
@@ -53,6 +62,7 @@ class DashboardStats {
       activeSurveillanceAlerts: json['activeSurveillanceAlerts'] as int? ?? 0,
       recentVisits: visits,
       villageStats: vStats,
+      farmStats: fStats,
       topSymptoms: syms,
       syntheticDataNotice: json['syntheticDataNotice'] as String? ?? 'All data is synthetic.',
     );
@@ -84,6 +94,38 @@ class VillageStat {
       animalCount: json['animalCount'] as int? ?? 0,
       recentVisitCount: json['recentVisitCount'] as int? ?? 0,
       hasAlert: json['hasAlert'] as bool? ?? false,
+    );
+  }
+}
+
+class FarmStat {
+  final int farmId;
+  final String farmCode;
+  final String farmName;
+  final String villageName;
+  final String ownerName;
+  final int animalCount;
+  final int visitCount;
+
+  FarmStat({
+    required this.farmId,
+    required this.farmCode,
+    required this.farmName,
+    required this.villageName,
+    required this.ownerName,
+    required this.animalCount,
+    required this.visitCount,
+  });
+
+  factory FarmStat.fromJson(Map<String, dynamic> json) {
+    return FarmStat(
+      farmId: json['farmId'] as int? ?? 0,
+      farmCode: json['farmCode'] as String? ?? '',
+      farmName: json['farmName'] as String? ?? '',
+      villageName: json['villageName'] as String? ?? '',
+      ownerName: json['ownerName'] as String? ?? '',
+      animalCount: json['animalCount'] as int? ?? 0,
+      visitCount: json['visitCount'] as int? ?? 0,
     );
   }
 }

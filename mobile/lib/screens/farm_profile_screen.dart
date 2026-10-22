@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/animal.dart';
 import '../models/farm.dart';
 import '../services/api_service.dart';
+import '../services/app_data_sync.dart';
 import '../theme/app_theme.dart';
 import 'animal_profile_screen.dart';
 import 'ledger_screen.dart';
@@ -207,6 +208,7 @@ class _FarmProfileScreenState extends State<FarmProfileScreen> with SingleTicker
                       ),
                     );
                     _loadFarmDetail();
+                    AppDataSync.notifyDataChanged();
                   } catch (e) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text(e.toString()), backgroundColor: AppTheme.alertRed),

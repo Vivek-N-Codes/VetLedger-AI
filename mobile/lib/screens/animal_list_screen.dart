@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/animal.dart';
 import '../models/farm.dart';
 import '../services/api_service.dart';
+import '../services/app_data_sync.dart';
 import '../theme/app_theme.dart';
 import 'animal_profile_screen.dart';
 
@@ -20,7 +21,6 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
   List<AnimalSummary> _filteredAnimals = [];
   bool _isLoading = true;
   String? _errorMessage;
-
   String _selectedVillage = 'All';
   String _selectedSpecies = 'All';
 
@@ -35,10 +35,12 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
     }
     _loadAnimals();
     _searchController.addListener(_applyFilters);
+    AppDataSync.changeNotifier.addListener(_loadAnimals);
   }
 
   @override
   void dispose() {
+    AppDataSync.changeNotifier.removeListener(_loadAnimals);
     _searchController.dispose();
     super.dispose();
   }
@@ -290,6 +292,7 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
                       ),
                     );
                     _loadAnimals();
+                    AppDataSync.notifyDataChanged();
                   } catch (e) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text(e.toString()), backgroundColor: AppTheme.alertRed),

@@ -56,6 +56,51 @@ public class DashboardStatsDto {
         public void setHasAlert(boolean hasAlert) { this.hasAlert = hasAlert; }
     }
 
+    public static class FarmStatDto {
+        private Long farmId;
+        private String farmCode;
+        private String farmName;
+        private String villageName;
+        private String ownerName;
+        private long animalCount;
+        private long visitCount;
+
+        public FarmStatDto() {}
+
+        public FarmStatDto(Long farmId, String farmCode, String farmName, String villageName, String ownerName, long animalCount, long visitCount) {
+            this.farmId = farmId;
+            this.farmCode = farmCode;
+            this.farmName = farmName;
+            this.villageName = villageName;
+            this.ownerName = ownerName;
+            this.animalCount = animalCount;
+            this.visitCount = visitCount;
+        }
+
+        public Long getFarmId() { return farmId; }
+        public void setFarmId(Long farmId) { this.farmId = farmId; }
+
+        public String getFarmCode() { return farmCode; }
+        public void setFarmCode(String farmCode) { this.farmCode = farmCode; }
+
+        public String getFarmName() { return farmName; }
+        public void setFarmName(String farmName) { this.farmName = farmName; }
+
+        public String getVillageName() { return villageName; }
+        public void setVillageName(String villageName) { this.villageName = villageName; }
+
+        public String getOwnerName() { return ownerName; }
+        public void setOwnerName(String ownerName) { this.ownerName = ownerName; }
+
+        public long getAnimalCount() { return animalCount; }
+        public void setAnimalCount(long animalCount) { this.animalCount = animalCount; }
+
+        public long getVisitCount() { return visitCount; }
+        public void setVisitCount(long visitCount) { this.visitCount = visitCount; }
+    }
+
+    private List<FarmStatDto> farmStats;
+
     public long getTotalAnimals() { return totalAnimals; }
     public void setTotalAnimals(long totalAnimals) { this.totalAnimals = totalAnimals; }
 
@@ -76,6 +121,9 @@ public class DashboardStatsDto {
 
     public List<VillageStatDto> getVillageStats() { return villageStats; }
     public void setVillageStats(List<VillageStatDto> villageStats) { this.villageStats = villageStats; }
+
+    public List<FarmStatDto> getFarmStats() { return farmStats; }
+    public void setFarmStats(List<FarmStatDto> farmStats) { this.farmStats = farmStats; }
 
     public Map<String, Long> getTopSymptoms() { return topSymptoms; }
     public void setTopSymptoms(Map<String, Long> topSymptoms) { this.topSymptoms = topSymptoms; }

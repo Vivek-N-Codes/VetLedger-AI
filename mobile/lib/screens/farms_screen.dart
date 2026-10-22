@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/farm.dart';
 import '../services/api_service.dart';
+import '../services/app_data_sync.dart';
 import '../theme/app_theme.dart';
 import 'farm_profile_screen.dart';
 
@@ -24,10 +25,12 @@ class _FarmsScreenState extends State<FarmsScreen> {
   void initState() {
     super.initState();
     _loadInitialData();
+    AppDataSync.changeNotifier.addListener(_refreshFarms);
   }
 
   @override
   void dispose() {
+    AppDataSync.changeNotifier.removeListener(_refreshFarms);
     _searchController.dispose();
     super.dispose();
   }
@@ -201,6 +204,7 @@ class _FarmsScreenState extends State<FarmsScreen> {
                       ),
                     );
                     _refreshFarms();
+                    AppDataSync.notifyDataChanged();
                   } catch (e) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(

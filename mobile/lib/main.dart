@@ -6,6 +6,7 @@ import 'screens/ledger_screen.dart';
 import 'screens/surveillance_dashboard_screen.dart';
 import 'screens/visit_entry_screen.dart';
 import 'services/api_service.dart';
+import 'services/app_data_sync.dart';
 import 'theme/app_theme.dart';
 
 void main() {
@@ -41,6 +42,8 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
     setState(() {
       _currentIndex = index;
     });
+    // Trigger real-time dynamic refresh across all screens
+    AppDataSync.notifyDataChanged();
   }
 
   void _openQuickVisit() {

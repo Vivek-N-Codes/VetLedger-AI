@@ -3,6 +3,7 @@ package com.vetledger.service;
 import com.vetledger.dto.DashboardStatsDto;
 import com.vetledger.dto.SurveillanceClusterDto;
 import com.vetledger.dto.VisitDto;
+import com.vetledger.entity.Farm;
 import com.vetledger.entity.Village;
 import com.vetledger.repository.*;
 import org.springframework.stereotype.Service;
@@ -82,6 +83,26 @@ public class DashboardService {
             ));
         }
         stats.setVillageStats(villageStats);
+
+        // Farm breakdown (dynamic animal counts per farm)
+        List<Farm> farms = farmRepository.findAllByOrderByFarmNameAsc();
+        List<DashboardStatsDto.FarmStatDto> farmStats = new ArrayList<>();
+        for (Farm f : farms) {
+            long farmAnimalCount = animalRepository.findByFarmId(f.getId()).size();
+            long farmVisitCount = visitRepository.findByFarmIdOrderByVisitDateDesc(f.getId()).size();
+            String ownerName = f.getOwner() != null ? f.getOwner().getFullName() : (f.getOwnerName() != null ? f.getOwnerName() : "");
+            String villageName = f.getVillage() != null ? f.getVillage().getName() : "";
+            farmStats.add(new DashboardStatsDto.FarmStatDto(
+                    f.getId(),
+                    f.getFarmCode(),
+                    f.getFarmName(),
+                    villageName,
+                    ownerName,
+                    farmAnimalCount,
+                    farmVisitCount
+            ));
+        }
+        stats.setFarmStats(farmStats);
 
         // Top symptoms
         Map<String, Long> topSymptoms = new LinkedHashMap<>();

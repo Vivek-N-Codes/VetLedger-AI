@@ -4,6 +4,7 @@ import '../models/animal.dart';
 import '../models/clinical_intelligence.dart';
 import '../models/visit.dart';
 import '../services/api_service.dart';
+import '../services/app_data_sync.dart';
 import '../theme/app_theme.dart';
 import 'clinical_intelligence_screen.dart';
 
@@ -288,6 +289,7 @@ class _VisitEntryScreenState extends State<VisitEntryScreen> {
       );
 
       final saved = await ApiService.createVisit(dto);
+      AppDataSync.notifyDataChanged();
 
       if (!mounted) return;
       setState(() => _isSaving = false);
