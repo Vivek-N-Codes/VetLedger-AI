@@ -1,0 +1,58 @@
+# Java / Spring Boot / Maven
+target/
+**/target/
+*.class
+*.jar
+*.war
+*.log
+.settings/
+.classpath
+.project
+
+# IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Flutter / Dart
+.dart_tool/
+**/.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+**/build/
+ephemeral/
+**/ephemeral/
+android/.gradle/
+**/android/.gradle/
+local.properties
+**/local.properties
+ios/Pods/
+**/ios/Pods/
+ios/.symlinks/
+**/ios/.symlinks/
+macos/Pods/
+**/macos/Pods/
+macos/.symlinks/
+**/macos/.symlinks/
+
+# Environment and Secrets
+.env
+*.local
+*.secret
+
+# OS Files
+.DS_Store
+Thumbs.db
+

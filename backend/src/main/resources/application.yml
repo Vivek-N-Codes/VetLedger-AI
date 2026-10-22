@@ -1,0 +1,45 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: vetledger-ai-backend
+  
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/vetledger_ai}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: false
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+# AI & Surveillance Configuration
+vetledger:
+  ai:
+    gemini-api-key: ${GEMINI_API_KEY:}
+    model: ${GEMINI_MODEL:gemini-1.5-flash}
+    timeout-ms: 5000
+  surveillance:
+    default-window-days: 14
+    min-affected-animals: 5
+    min-affected-farms: 3
+    baseline-elevation-threshold: 2.0
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
