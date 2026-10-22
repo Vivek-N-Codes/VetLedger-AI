@@ -21,8 +21,12 @@ public class AnimalDetailDto {
     private String tagRfid;
     private String notes;
     private List<VisitDto> visits;
+    private int totalVisitsRecorded;
 
     public AnimalDetailDto() {}
+
+    public int getTotalVisitsRecorded() { return totalVisitsRecorded; }
+    public void setTotalVisitsRecorded(int totalVisitsRecorded) { this.totalVisitsRecorded = totalVisitsRecorded; }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

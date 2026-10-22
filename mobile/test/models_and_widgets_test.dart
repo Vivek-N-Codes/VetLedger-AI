@@ -151,8 +151,9 @@ void main() {
 
       expect(find.text('Dashboard'), findsWidgets);
       expect(find.text('Animals'), findsOneWidget);
+      expect(find.text('Farms'), findsOneWidget);
       expect(find.text('Surveillance'), findsOneWidget);
-      expect(find.text('New Visit'), findsOneWidget);
+      expect(find.text('Ledger'), findsOneWidget);
     });
   });
 }

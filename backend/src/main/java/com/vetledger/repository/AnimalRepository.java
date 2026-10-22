@@ -13,6 +13,7 @@ import java.util.Optional;
 public interface AnimalRepository extends JpaRepository<Animal, Long> {
 
     Optional<Animal> findByAnimalCode(String animalCode);
+    boolean existsByAnimalCode(String animalCode);
 
     @Query("SELECT a FROM Animal a " +
            "JOIN a.farm f " +

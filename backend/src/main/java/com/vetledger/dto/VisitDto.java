@@ -22,6 +22,24 @@ public class VisitDto {
     private List<String> symptoms;
     private OffsetDateTime createdAt;
 
+    // Financial charges
+    private BigDecimal consultationFee;
+    private BigDecimal serviceFee;
+    private BigDecimal medicineFee;
+    private BigDecimal otherFee;
+    private BigDecimal totalCharge;
+
+    // Modular Clinical Decision Fields
+    private String symptomOnsetDuration;
+    private String physicalExamFindings;
+    private String treatmentsAdministeredPrior;
+    private String priorTreatmentResponse;
+    private String finalClinicalAssessment;
+    private String actualTreatmentAdministered;
+    private String ownerAdvice;
+    private LocalDate followUpDueDate;
+    private String followUpStatus;
+
     public VisitDto() {}
 
     public Long getId() { return id; }
@@ -68,4 +86,46 @@ public class VisitDto {
 
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
+
+    public BigDecimal getConsultationFee() { return consultationFee; }
+    public void setConsultationFee(BigDecimal consultationFee) { this.consultationFee = consultationFee; }
+
+    public BigDecimal getServiceFee() { return serviceFee; }
+    public void setServiceFee(BigDecimal serviceFee) { this.serviceFee = serviceFee; }
+
+    public BigDecimal getMedicineFee() { return medicineFee; }
+    public void setMedicineFee(BigDecimal medicineFee) { this.medicineFee = medicineFee; }
+
+    public BigDecimal getOtherFee() { return otherFee; }
+    public void setOtherFee(BigDecimal otherFee) { this.otherFee = otherFee; }
+
+    public BigDecimal getTotalCharge() { return totalCharge; }
+    public void setTotalCharge(BigDecimal totalCharge) { this.totalCharge = totalCharge; }
+
+    public String getSymptomOnsetDuration() { return symptomOnsetDuration; }
+    public void setSymptomOnsetDuration(String symptomOnsetDuration) { this.symptomOnsetDuration = symptomOnsetDuration; }
+
+    public String getPhysicalExamFindings() { return physicalExamFindings; }
+    public void setPhysicalExamFindings(String physicalExamFindings) { this.physicalExamFindings = physicalExamFindings; }
+
+    public String getTreatmentsAdministeredPrior() { return treatmentsAdministeredPrior; }
+    public void setTreatmentsAdministeredPrior(String treatmentsAdministeredPrior) { this.treatmentsAdministeredPrior = treatmentsAdministeredPrior; }
+
+    public String getPriorTreatmentResponse() { return priorTreatmentResponse; }
+    public void setPriorTreatmentResponse(String priorTreatmentResponse) { this.priorTreatmentResponse = priorTreatmentResponse; }
+
+    public String getFinalClinicalAssessment() { return finalClinicalAssessment; }
+    public void setFinalClinicalAssessment(String finalClinicalAssessment) { this.finalClinicalAssessment = finalClinicalAssessment; }
+
+    public String getActualTreatmentAdministered() { return actualTreatmentAdministered; }
+    public void setActualTreatmentAdministered(String actualTreatmentAdministered) { this.actualTreatmentAdministered = actualTreatmentAdministered; }
+
+    public String getOwnerAdvice() { return ownerAdvice; }
+    public void setOwnerAdvice(String ownerAdvice) { this.ownerAdvice = ownerAdvice; }
+
+    public LocalDate getFollowUpDueDate() { return followUpDueDate; }
+    public void setFollowUpDueDate(LocalDate followUpDueDate) { this.followUpDueDate = followUpDueDate; }
+
+    public String getFollowUpStatus() { return followUpStatus; }
+    public void setFollowUpStatus(String followUpStatus) { this.followUpStatus = followUpStatus; }
 }

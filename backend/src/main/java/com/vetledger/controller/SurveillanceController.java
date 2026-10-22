@@ -1,6 +1,7 @@
 package com.vetledger.controller;
 
 import com.vetledger.dto.ClusterDetailDto;
+import com.vetledger.dto.PopulationOverviewDto;
 import com.vetledger.dto.SurveillanceClusterDto;
 import com.vetledger.service.SurveillanceEngineService;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,13 @@ public class SurveillanceController {
 
     public SurveillanceController(SurveillanceEngineService surveillanceEngineService) {
         this.surveillanceEngineService = surveillanceEngineService;
+    }
+
+    @GetMapping("/overview")
+    public ResponseEntity<PopulationOverviewDto> getOverview(
+            @RequestParam(required = false, defaultValue = "14") Integer windowDays) {
+        PopulationOverviewDto overview = surveillanceEngineService.getPopulationOverview(windowDays);
+        return ResponseEntity.ok(overview);
     }
 
     @GetMapping("/clusters")

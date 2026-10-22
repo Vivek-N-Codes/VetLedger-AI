@@ -99,3 +99,19 @@ To ensure responsible public health communication, VetLedger AI strictly adheres
 * Label as: *"Potential Symptom Cluster Detected — Priority Surveillance Alert"*
 * Label as: *"Unusual Symptom Concentration — Investigation Recommended"*
 * **NEVER displays**: *"Confirmed Outbreak"* or *"Epidemic Proven"* without laboratory pathogen confirmation.
+
+---
+
+## 6. The 17 Cluster-Affected Animals vs. 22 Total Active Animals in Sangamner
+
+A critical demonstration of algorithmic precision in VetLedger AI is the transparent reporting of the **17 vs 22 distinction**:
+
+* **22 Total Active Animals with Visits in Window**:
+  During the 14-day observation window (`2026-10-09` to `2026-10-22`), 22 distinct animals in Sangamner had clinical visits recorded in the database.
+* **17 Cluster-Affected Animals**:
+  Of those 22 animals, **exactly 17 distinct animals across 6 farms** presented with the specific syndromic concentration: `FEVER` + `NASAL_DISCHARGE` (9.4x elevation over historical baseline).
+* **The 5 Non-Cluster Routine Encounters**:
+  The remaining 5 animals had independent, routine veterinary encounters during the same timeframe (such as postpartum uterine involution check, minor mechanical horn laceration, and dietary fiber deficiency).
+
+Rather than naively counting every animal in a village (which would create false positives and imprecise quarantine orders), VetLedger AI's syndromic algorithm surgically separates cluster cases from baseline routine practice. Both figures are presented side-by-side in the UI for complete epidemiological transparency.
+

@@ -20,12 +20,22 @@ public class Farm {
     @Column(name = "owner_name", nullable = false, length = 150)
     private String ownerName;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "owner_id")
+    private Owner owner;
+
     @Column(name = "contact_number", length = 30)
     private String contactNumber;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "village_id", nullable = false)
     private Village village;
+
+    @Column(columnDefinition = "TEXT")
+    private String address;
+
+    @Column(columnDefinition = "TEXT")
+    private String notes;
 
     @Column
     private Double latitude;
@@ -49,75 +59,39 @@ public class Farm {
         this.longitude = longitude;
     }
 
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getFarmCode() { return farmCode; }
+    public void setFarmCode(String farmCode) { this.farmCode = farmCode; }
 
-    public String getFarmCode() {
-        return farmCode;
-    }
+    public String getFarmName() { return farmName; }
+    public void setFarmName(String farmName) { this.farmName = farmName; }
 
-    public void setFarmCode(String farmCode) {
-        this.farmCode = farmCode;
-    }
+    public String getOwnerName() { return ownerName; }
+    public void setOwnerName(String ownerName) { this.ownerName = ownerName; }
 
-    public String getFarmName() {
-        return farmName;
-    }
+    public Owner getOwner() { return owner; }
+    public void setOwner(Owner owner) { this.owner = owner; }
 
-    public void setFarmName(String farmName) {
-        this.farmName = farmName;
-    }
+    public String getContactNumber() { return contactNumber; }
+    public void setContactNumber(String contactNumber) { this.contactNumber = contactNumber; }
 
-    public String getOwnerName() {
-        return ownerName;
-    }
+    public Village getVillage() { return village; }
+    public void setVillage(Village village) { this.village = village; }
 
-    public void setOwnerName(String ownerName) {
-        this.ownerName = ownerName;
-    }
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
 
-    public String getContactNumber() {
-        return contactNumber;
-    }
+    public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
 
-    public void setContactNumber(String contactNumber) {
-        this.contactNumber = contactNumber;
-    }
+    public Double getLatitude() { return latitude; }
+    public void setLatitude(Double latitude) { this.latitude = latitude; }
 
-    public Village getVillage() {
-        return village;
-    }
+    public Double getLongitude() { return longitude; }
+    public void setLongitude(Double longitude) { this.longitude = longitude; }
 
-    public void setVillage(Village village) {
-        this.village = village;
-    }
-
-    public Double getLatitude() {
-        return latitude;
-    }
-
-    public void setLatitude(Double latitude) {
-        this.latitude = latitude;
-    }
-
-    public Double getLongitude() {
-        return longitude;
-    }
-
-    public void setLongitude(Double longitude) {
-        this.longitude = longitude;
-    }
-
-    public OffsetDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(OffsetDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
+    public OffsetDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
 }

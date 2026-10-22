@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -44,4 +45,19 @@ public interface VisitRepository extends JpaRepository<Visit, Long> {
 
     @Query("SELECT MAX(v.visitDate) FROM Visit v")
     LocalDate findLatestVisitDate();
+
+    @Query("SELECT v FROM Visit v WHERE v.animal.farm.id = :farmId ORDER BY v.visitDate DESC")
+    List<Visit> findByFarmIdOrderByVisitDateDesc(@Param("farmId") Long farmId);
+
+    @Query("SELECT v FROM Visit v WHERE v.animal.farm.owner.id = :ownerId ORDER BY v.visitDate DESC, v.id DESC")
+    List<Visit> findByOwnerIdOrderByVisitDateDesc(@Param("ownerId") Long ownerId);
+
+    @Query("SELECT COALESCE(SUM(v.totalCharge), 0) FROM Visit v WHERE v.animal.farm.owner.id = :ownerId")
+    BigDecimal findTotalChargesByOwnerId(@Param("ownerId") Long ownerId);
+
+    @Query("SELECT COALESCE(SUM(v.totalCharge), 0) FROM Visit v WHERE v.animal.farm.id = :farmId")
+    BigDecimal findTotalChargesByFarmId(@Param("farmId") Long farmId);
+
+    @Query("SELECT COALESCE(SUM(v.totalCharge), 0) FROM Visit v")
+    BigDecimal findTotalChargesSystemWide();
 }

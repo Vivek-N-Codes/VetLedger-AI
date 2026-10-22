@@ -2,9 +2,12 @@ package com.vetledger.controller;
 
 import com.vetledger.dto.AnimalDetailDto;
 import com.vetledger.dto.AnimalSummaryDto;
+import com.vetledger.dto.CreateAnimalRequest;
 import com.vetledger.dto.VisitDto;
 import com.vetledger.service.AnimalService;
 import com.vetledger.service.VisitService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,5 +45,11 @@ public class AnimalController {
     @GetMapping("/{id}/visits")
     public ResponseEntity<List<VisitDto>> getAnimalVisits(@PathVariable Long id) {
         return ResponseEntity.ok(visitService.getVisitsForAnimal(id));
+    }
+
+    @PostMapping
+    public ResponseEntity<AnimalDetailDto> registerAnimal(@Valid @RequestBody CreateAnimalRequest request) {
+        AnimalDetailDto created = animalService.registerAnimal(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 }

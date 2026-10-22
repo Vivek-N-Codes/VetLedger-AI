@@ -18,8 +18,12 @@ public class AnimalSummaryDto {
     private LocalDate lastVisitDate;
     private String lastVisitComplaint;
     private int totalVisits;
+    private String tagRfid;
 
     public AnimalSummaryDto() {}
+
+    public String getTagRfid() { return tagRfid; }
+    public void setTagRfid(String tagRfid) { this.tagRfid = tagRfid; }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

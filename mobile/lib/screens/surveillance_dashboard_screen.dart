@@ -16,16 +16,18 @@ class SurveillanceDashboardScreen extends StatefulWidget {
 class _SurveillanceDashboardScreenState extends State<SurveillanceDashboardScreen> {
   int _windowDays = 14;
   late Future<List<SurveillanceCluster>> _clustersFuture;
+  late Future<PopulationOverview> _overviewFuture;
 
   @override
   void initState() {
     super.initState();
-    _loadClusters();
+    _loadSurveillanceData();
   }
 
-  void _loadClusters() {
+  void _loadSurveillanceData() {
     setState(() {
       _clustersFuture = ApiService.getSurveillanceClusters(windowDays: _windowDays);
+      _overviewFuture = ApiService.getPopulationOverview(windowDays: _windowDays);
     });
   }
 
@@ -33,17 +35,17 @@ class _SurveillanceDashboardScreenState extends State<SurveillanceDashboardScree
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Disease Surveillance'),
+        title: const Text('Disease Surveillance', style: TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
             tooltip: 'Re-run Surveillance Algorithm',
-            onPressed: _loadClusters,
+            onPressed: _loadSurveillanceData,
           ),
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: () async => _loadClusters(),
+        onRefresh: () async => _loadSurveillanceData(),
         color: AppTheme.primaryTeal,
         child: ListView(
           padding: const EdgeInsets.all(16),
@@ -94,13 +96,12 @@ class _SurveillanceDashboardScreenState extends State<SurveillanceDashboardScree
                         items: const [
                           DropdownMenuItem(value: 7, child: Text('7 Days')),
                           DropdownMenuItem(value: 14, child: Text('14 Days (Standard)')),
-                          DropdownMenuItem(value: 21, child: Text('21 Days')),
                           DropdownMenuItem(value: 30, child: Text('30 Days')),
                         ],
                         onChanged: (val) {
                           if (val != null) {
                             setState(() => _windowDays = val);
-                            _loadClusters();
+                            _loadSurveillanceData();
                           }
                         },
                       ),
@@ -108,6 +109,74 @@ class _SurveillanceDashboardScreenState extends State<SurveillanceDashboardScree
                   ),
                 ],
               ),
+            ),
+            const SizedBox(height: 16),
+
+            // Population Overview Metrics Card
+            FutureBuilder<PopulationOverview>(
+              future: _overviewFuture,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const SizedBox();
+                }
+                final ov = snapshot.data!;
+                return Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Row(
+                          children: [
+                            Icon(Icons.query_stats_rounded, color: AppTheme.primaryTeal, size: 20),
+                            SizedBox(width: 8),
+                            Text('Population Health Metrics (Window)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _metricBox('Active Animals', ov.activeAnimalsWithVisits.toString(), AppTheme.textPrimary),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: _metricBox('Cluster Animals', ov.clusterAffectedAnimals.toString(), AppTheme.alertRed),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: _metricBox('Syndrome Ratio', '${ov.syndromeElevationRatio.toStringAsFixed(1)}x', const Color(0xFF7C3AED)),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        // Dedicated Discrepancy Clarification Banner
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primaryLight.withValues(alpha: 0.5),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: AppTheme.primaryTeal.withValues(alpha: 0.3)),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(Icons.info_outline_rounded, size: 16, color: AppTheme.primaryTeal),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  ov.clarificationNote,
+                                  style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary, height: 1.35),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 16),
 
@@ -129,7 +198,7 @@ class _SurveillanceDashboardScreenState extends State<SurveillanceDashboardScree
                           const SizedBox(height: 10),
                           Text('Surveillance check failed: ${snapshot.error}', textAlign: TextAlign.center, style: const TextStyle(fontSize: 13)),
                           const SizedBox(height: 12),
-                          ElevatedButton(onPressed: _loadClusters, child: const Text('Retry Analysis')),
+                          ElevatedButton(onPressed: _loadSurveillanceData, child: const Text('Retry Analysis')),
                         ],
                       ),
                     ),
@@ -148,7 +217,7 @@ class _SurveillanceDashboardScreenState extends State<SurveillanceDashboardScree
                           const Text('No Anomalous Clusters Detected', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
                           const SizedBox(height: 6),
                           Text(
-                            'All 5 monitored villages are within normal baseline thresholds for the $_windowDays-day observation window.',
+                            'All monitored villages are within normal baseline thresholds for the $_windowDays-day observation window.',
                             textAlign: TextAlign.center,
                             style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
                           ),

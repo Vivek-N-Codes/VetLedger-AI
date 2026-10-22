@@ -195,3 +195,54 @@ class AffectedFarmModel {
     );
   }
 }
+
+class PopulationOverview {
+  final int windowDays;
+  final int activeAnimalsWithVisits;
+  final int clusterAffectedAnimals;
+  final int activeFarms;
+  final int clusterAffectedFarms;
+  final int totalVisitsInWindow;
+  final int clusterSyndromeVisits;
+  final double syndromeElevationRatio;
+  final String clarificationNote;
+
+  PopulationOverview({
+    required this.windowDays,
+    required this.activeAnimalsWithVisits,
+    required this.clusterAffectedAnimals,
+    required this.activeFarms,
+    required this.clusterAffectedFarms,
+    required this.totalVisitsInWindow,
+    required this.clusterSyndromeVisits,
+    required this.syndromeElevationRatio,
+    required this.clarificationNote,
+  });
+
+  factory PopulationOverview.fromJson(Map<String, dynamic> json) {
+    int clusterAnimals = json['clusterAffectedAnimals'] as int? ?? 0;
+    double elevRatio = (json['syndromeElevationRatio'] as num?)?.toDouble() ?? 1.0;
+    if (json['activeClusters'] is List && (json['activeClusters'] as List).isNotEmpty) {
+      final first = (json['activeClusters'] as List).first;
+      if (clusterAnimals == 0 && first['distinctAnimalCount'] != null) {
+        clusterAnimals = first['distinctAnimalCount'] as int;
+      }
+      if (elevRatio == 1.0 && first['elevationFactor'] != null) {
+        elevRatio = (first['elevationFactor'] as num).toDouble();
+      }
+    }
+
+    return PopulationOverview(
+      windowDays: json['windowDays'] as int? ?? 14,
+      activeAnimalsWithVisits: json['activeAnimalsWithVisits'] as int? ?? json['animalsWithVisitsInWindow'] as int? ?? 0,
+      clusterAffectedAnimals: clusterAnimals,
+      activeFarms: json['activeFarms'] as int? ?? json['farmsWithVisitsInWindow'] as int? ?? 0,
+      clusterAffectedFarms: json['clusterAffectedFarms'] as int? ?? 0,
+      totalVisitsInWindow: json['totalVisitsInWindow'] as int? ?? 0,
+      clusterSyndromeVisits: json['clusterSyndromeVisits'] as int? ?? 0,
+      syndromeElevationRatio: elevRatio,
+      clarificationNote: json['clarificationNote'] as String? ?? json['verifiedDiscrepancyExplanation'] as String? ?? json['dataCoverageNote'] as String? ?? '',
+    );
+  }
+}
+

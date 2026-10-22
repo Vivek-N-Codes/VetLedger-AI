@@ -4,6 +4,7 @@ import com.vetledger.entity.Farm;
 import com.vetledger.entity.Village;
 import com.vetledger.repository.FarmRepository;
 import com.vetledger.repository.VillageRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,8 +27,30 @@ public class LookupController {
         return ResponseEntity.ok(villageRepository.findAllByOrderByNameAsc());
     }
 
-    @GetMapping("/farms")
-    public ResponseEntity<List<Farm>> getFarms(@RequestParam(required = false) Long villageId) {
+    @PostMapping("/villages")
+    public ResponseEntity<Village> createVillage(@RequestBody Map<String, Object> req) {
+        String name = (String) req.get("name");
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("Village name is required");
+        }
+        String cleanName = name.trim();
+        Optional<Village> existing = villageRepository.findByName(cleanName);
+        if (existing.isPresent()) {
+            return ResponseEntity.ok(existing.get()); // Prevent duplicate records, return existing
+        }
+
+        String district = (String) req.getOrDefault("district", "Ahmednagar");
+        String state = (String) req.getOrDefault("state", "Maharashtra");
+        Double lat = req.containsKey("latitude") ? Double.valueOf(req.get("latitude").toString()) : 19.5761;
+        Double lng = req.containsKey("longitude") ? Double.valueOf(req.get("longitude").toString()) : 74.2070;
+
+        Village v = new Village(null, cleanName, district, state, lat, lng);
+        Village saved = villageRepository.save(v);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    }
+
+    @GetMapping("/farms-lookup")
+    public ResponseEntity<List<Farm>> getFarmsLookup(@RequestParam(required = false) Long villageId) {
         if (villageId != null) {
             return ResponseEntity.ok(farmRepository.findByVillageIdOrderByFarmNameAsc(villageId));
         }

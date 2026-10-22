@@ -112,3 +112,39 @@ class AnimalDetail {
     );
   }
 }
+
+class CreateAnimalRequest {
+  final String name;
+  final String species;
+  final String? breed;
+  final double? ageYears;
+  final String sex;
+  final int farmId;
+  final String? tagRfid;
+  final String? notes;
+
+  CreateAnimalRequest({
+    required this.name,
+    required this.species,
+    this.breed,
+    this.ageYears,
+    required this.sex,
+    required this.farmId,
+    this.tagRfid,
+    this.notes,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'species': species,
+      'breed': breed,
+      'ageYears': ageYears,
+      'sex': sex,
+      'farmId': farmId,
+      'tagRfid': tagRfid,
+      'notes': notes,
+    };
+  }
+}
+

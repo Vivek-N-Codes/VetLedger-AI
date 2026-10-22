@@ -10,5 +10,6 @@ import java.util.Optional;
 @Repository
 public interface VillageRepository extends JpaRepository<Village, Long> {
     List<Village> findAllByOrderByNameAsc();
+    Optional<Village> findByName(String name);
     Optional<Village> findByNameIgnoreCase(String name);
 }

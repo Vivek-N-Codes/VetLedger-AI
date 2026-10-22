@@ -3,8 +3,11 @@ import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../models/animal.dart';
+import '../models/clinical_follow_up.dart';
 import '../models/clinical_intelligence.dart';
 import '../models/dashboard_stats.dart';
+import '../models/farm.dart';
+import '../models/owner_ledger.dart';
 import '../models/surveillance_cluster.dart';
 import '../models/visit.dart';
 
@@ -15,18 +18,15 @@ class ApiService {
     if (_customBaseUrl != null && _customBaseUrl!.isNotEmpty) {
       return _customBaseUrl!;
     }
-    // Check if defined via --dart-define=API_URL=...
     const fromDefine = String.fromEnvironment('API_URL');
     if (fromDefine.isNotEmpty) {
       return fromDefine;
     }
-    // Determine target platform default
     if (kIsWeb) {
       return 'http://localhost:8080/api';
     }
     try {
       if (Platform.isAndroid) {
-        // Standard Android emulator loopback alias to host machine
         return 'http://10.0.2.2:8080/api';
       }
     } catch (_) {}
@@ -42,7 +42,9 @@ class ApiService {
     'Accept': 'application/json',
   };
 
-  // Health
+  // -------------------------------------------------------------
+  // HEALTH & DASHBOARD
+  // -------------------------------------------------------------
   static Future<Map<String, dynamic>> getHealth() async {
     final response = await http.get(Uri.parse('$baseUrl/health')).timeout(const Duration(seconds: 5));
     if (response.statusCode == 200) {
@@ -51,7 +53,6 @@ class ApiService {
     throw Exception('Health check failed: HTTP ${response.statusCode}');
   }
 
-  // Dashboard Stats
   static Future<DashboardStats> getDashboardStats() async {
     final response = await http.get(Uri.parse('$baseUrl/dashboard')).timeout(const Duration(seconds: 8));
     if (response.statusCode == 200) {
@@ -61,7 +62,9 @@ class ApiService {
     throw Exception('Failed to load dashboard: HTTP ${response.statusCode} - ${response.body}');
   }
 
-  // Animals Search & List
+  // -------------------------------------------------------------
+  // ANIMALS
+  // -------------------------------------------------------------
   static Future<List<AnimalSummary>> getAnimals({
     String? search,
     int? villageId,
@@ -83,7 +86,6 @@ class ApiService {
     throw Exception('Failed to load animals: HTTP ${response.statusCode}');
   }
 
-  // Animal Detail
   static Future<AnimalDetail> getAnimalDetail(int id) async {
     final response = await http.get(Uri.parse('$baseUrl/animals/$id')).timeout(const Duration(seconds: 8));
     if (response.statusCode == 200) {
@@ -93,7 +95,21 @@ class ApiService {
     throw Exception('Failed to load animal detail: HTTP ${response.statusCode}');
   }
 
-  // Animal Visits Timeline
+  static Future<AnimalDetail> registerAnimal(CreateAnimalRequest request) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/animals'),
+      headers: _headers,
+      body: jsonEncode(request.toJson()),
+    ).timeout(const Duration(seconds: 10));
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      return AnimalDetail.fromJson(data);
+    }
+    final error = jsonDecode(response.body);
+    throw Exception(error['message'] ?? 'Failed to register animal: HTTP ${response.statusCode}');
+  }
+
   static Future<List<VisitModel>> getAnimalVisits(int animalId) async {
     final response = await http.get(Uri.parse('$baseUrl/animals/$animalId/visits')).timeout(const Duration(seconds: 8));
     if (response.statusCode == 200) {
@@ -103,7 +119,50 @@ class ApiService {
     throw Exception('Failed to load animal visits: HTTP ${response.statusCode}');
   }
 
-  // Record Clinical Visit
+  // -------------------------------------------------------------
+  // FARMS
+  // -------------------------------------------------------------
+  static Future<List<FarmSummary>> getFarmsList({int? villageId, String? search}) async {
+    final params = <String, String>{};
+    if (villageId != null) params['villageId'] = villageId.toString();
+    if (search != null && search.trim().isNotEmpty) params['search'] = search.trim();
+
+    final uri = Uri.parse('$baseUrl/farms').replace(queryParameters: params.isNotEmpty ? params : null);
+    final response = await http.get(uri).timeout(const Duration(seconds: 8));
+    if (response.statusCode == 200) {
+      final List list = jsonDecode(response.body) as List;
+      return list.map((e) => FarmSummary.fromJson(e as Map<String, dynamic>)).toList();
+    }
+    throw Exception('Failed to load farms: HTTP ${response.statusCode}');
+  }
+
+  static Future<FarmDetail> getFarmDetail(int id) async {
+    final response = await http.get(Uri.parse('$baseUrl/farms/$id')).timeout(const Duration(seconds: 8));
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      return FarmDetail.fromJson(data);
+    }
+    throw Exception('Failed to load farm details: HTTP ${response.statusCode}');
+  }
+
+  static Future<FarmDetail> createFarm(Map<String, dynamic> payload) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/farms'),
+      headers: _headers,
+      body: jsonEncode(payload),
+    ).timeout(const Duration(seconds: 10));
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      return FarmDetail.fromJson(data);
+    }
+    final error = jsonDecode(response.body);
+    throw Exception(error['message'] ?? 'Failed to create farm: HTTP ${response.statusCode}');
+  }
+
+  // -------------------------------------------------------------
+  // VISITS & CLINICAL INTELLIGENCE
+  // -------------------------------------------------------------
   static Future<VisitModel> createVisit(CreateVisitDto request) async {
     final response = await http.post(
       Uri.parse('$baseUrl/visits'),
@@ -118,12 +177,11 @@ class ApiService {
     throw Exception('Failed to record visit: HTTP ${response.statusCode} - ${response.body}');
   }
 
-  // AI Clinical Intelligence
   static Future<ClinicalIntelligenceModel> getClinicalIntelligence(int animalId) async {
     final response = await http.post(
       Uri.parse('$baseUrl/animals/$animalId/clinical-intelligence'),
       headers: _headers,
-    ).timeout(const Duration(seconds: 12));
+    ).timeout(const Duration(seconds: 14));
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body) as Map<String, dynamic>;
@@ -132,7 +190,23 @@ class ApiService {
     throw Exception('Failed to generate clinical intelligence: HTTP ${response.statusCode}');
   }
 
-  // Surveillance Clusters
+  static Future<ClinicalIntelligenceModel> analyzeDraftVisit(AnalyzeDraftRequest draft) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/animals/draft-analysis'),
+      headers: _headers,
+      body: jsonEncode(draft.toJson()),
+    ).timeout(const Duration(seconds: 14));
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      return ClinicalIntelligenceModel.fromJson(data);
+    }
+    throw Exception('Failed to analyze visit draft: HTTP ${response.statusCode} - ${response.body}');
+  }
+
+  // -------------------------------------------------------------
+  // SURVEILLANCE & POPULATION HEALTH
+  // -------------------------------------------------------------
   static Future<List<SurveillanceCluster>> getSurveillanceClusters({int windowDays = 14}) async {
     final uri = Uri.parse('$baseUrl/surveillance/clusters?windowDays=$windowDays');
     final response = await http.get(uri).timeout(const Duration(seconds: 8));
@@ -143,7 +217,6 @@ class ApiService {
     throw Exception('Failed to load surveillance clusters: HTTP ${response.statusCode}');
   }
 
-  // Cluster Detail
   static Future<ClusterDetailModel> getClusterDetail(String clusterId, {int windowDays = 14}) async {
     final uri = Uri.parse('$baseUrl/surveillance/clusters/$clusterId?windowDays=$windowDays');
     final response = await http.get(uri).timeout(const Duration(seconds: 8));
@@ -154,9 +227,113 @@ class ApiService {
     throw Exception('Failed to load cluster details: HTTP ${response.statusCode}');
   }
 
-  // Lookup data: villages, farms, symptoms
+  static Future<PopulationOverview> getPopulationOverview({int windowDays = 14}) async {
+    final uri = Uri.parse('$baseUrl/surveillance/overview?windowDays=$windowDays');
+    final response = await http.get(uri).timeout(const Duration(seconds: 8));
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      return PopulationOverview.fromJson(data);
+    }
+    throw Exception('Failed to load population overview: HTTP ${response.statusCode}');
+  }
+
+  // -------------------------------------------------------------
+  // OWNER FINANCIAL LEDGER
+  // -------------------------------------------------------------
+  static Future<List<OwnerLedgerSummary>> getOwnerLedgers({String? search}) async {
+    final params = <String, String>{};
+    if (search != null && search.trim().isNotEmpty) params['search'] = search.trim();
+
+    final uri = Uri.parse('$baseUrl/ledger/owners').replace(queryParameters: params.isNotEmpty ? params : null);
+    final response = await http.get(uri).timeout(const Duration(seconds: 8));
+    if (response.statusCode == 200) {
+      final List list = jsonDecode(response.body) as List;
+      return list.map((e) => OwnerLedgerSummary.fromJson(e as Map<String, dynamic>)).toList();
+    }
+    throw Exception('Failed to load owner ledgers: HTTP ${response.statusCode}');
+  }
+
+  static Future<OwnerLedgerDetail> getOwnerLedgerDetail(int ownerId) async {
+    final uri = Uri.parse('$baseUrl/ledger/owners/$ownerId');
+    final response = await http.get(uri).timeout(const Duration(seconds: 8));
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      return OwnerLedgerDetail.fromJson(data);
+    }
+    throw Exception('Failed to load owner ledger detail: HTTP ${response.statusCode}');
+  }
+
+  static Future<PaymentReceipt> recordPayment(Map<String, dynamic> payload) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/ledger/payments'),
+      headers: _headers,
+      body: jsonEncode(payload),
+    ).timeout(const Duration(seconds: 10));
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      return PaymentReceipt.fromJson(data);
+    }
+    final error = jsonDecode(response.body);
+    throw Exception(error['message'] ?? 'Failed to record payment: HTTP ${response.statusCode}');
+  }
+
+  static Future<PaymentReceipt> getPaymentReceipt(int paymentId) async {
+    final uri = Uri.parse('$baseUrl/ledger/payments/$paymentId/receipt');
+    final response = await http.get(uri).timeout(const Duration(seconds: 8));
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      return PaymentReceipt.fromJson(data);
+    }
+    throw Exception('Failed to load payment receipt: HTTP ${response.statusCode}');
+  }
+
+  // -------------------------------------------------------------
+  // CLINICAL FOLLOW-UPS
+  // -------------------------------------------------------------
+  static Future<List<ClinicalFollowUpModel>> getFollowUps({String? status}) async {
+    final uri = status != null
+        ? Uri.parse('$baseUrl/follow-ups?status=$status')
+        : Uri.parse('$baseUrl/follow-ups');
+    final response = await http.get(uri).timeout(const Duration(seconds: 8));
+    if (response.statusCode == 200) {
+      final List list = jsonDecode(response.body) as List;
+      return list.map((e) => ClinicalFollowUpModel.fromJson(e as Map<String, dynamic>)).toList();
+    }
+    throw Exception('Failed to load follow ups: HTTP ${response.statusCode}');
+  }
+
+  static Future<ClinicalFollowUpModel> updateFollowUpStatus(int id, String status, {String? notes}) async {
+    final response = await http.put(
+      Uri.parse('$baseUrl/follow-ups/$id/status'),
+      headers: _headers,
+      body: jsonEncode({'status': status, 'notes': notes}),
+    ).timeout(const Duration(seconds: 8));
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      return ClinicalFollowUpModel.fromJson(data);
+    }
+    throw Exception('Failed to update follow-up status: HTTP ${response.statusCode}');
+  }
+
+  // -------------------------------------------------------------
+  // LOOKUPS & SEARCH
+  // -------------------------------------------------------------
   static Future<List<Map<String, dynamic>>> getVillages() async {
     final response = await http.get(Uri.parse('$baseUrl/villages')).timeout(const Duration(seconds: 5));
+    if (response.statusCode == 200) {
+      final List list = jsonDecode(response.body) as List;
+      return list.cast<Map<String, dynamic>>();
+    }
+    return [];
+  }
+
+  static Future<List<Map<String, dynamic>>> getOwners({int? villageId}) async {
+    final uri = villageId != null
+        ? Uri.parse('$baseUrl/owners?villageId=$villageId')
+        : Uri.parse('$baseUrl/owners');
+    final response = await http.get(uri).timeout(const Duration(seconds: 5));
     if (response.statusCode == 200) {
       final List list = jsonDecode(response.body) as List;
       return list.cast<Map<String, dynamic>>();
@@ -182,7 +359,6 @@ class ApiService {
       final List list = jsonDecode(response.body) as List;
       return list.map((e) => Map<String, String>.from(e as Map)).toList();
     }
-    // Hardcoded fallback list if network is down
     return [
       {'code': 'FEVER', 'label': 'Fever / Hyperthermia'},
       {'code': 'NASAL_DISCHARGE', 'label': 'Nasal Discharge'},

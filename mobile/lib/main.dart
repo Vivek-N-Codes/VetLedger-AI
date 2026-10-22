@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'screens/animal_list_screen.dart';
 import 'screens/dashboard_screen.dart';
+import 'screens/farms_screen.dart';
+import 'screens/ledger_screen.dart';
 import 'screens/surveillance_dashboard_screen.dart';
 import 'screens/visit_entry_screen.dart';
 import 'services/api_service.dart';
@@ -41,11 +43,21 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
     });
   }
 
+  void _openQuickVisit() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const VisitEntryScreen(),
+      ),
+    );
+  }
+
   void _showConnectionConfig() {
     final controller = TextEditingController(text: ApiService.baseUrl);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Row(
           children: [
             Icon(Icons.settings_ethernet_rounded, color: AppTheme.primaryTeal),
@@ -100,16 +112,20 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
     final pages = [
       DashboardScreen(onNavigateTab: _onTabSelected),
       const AnimalListScreen(),
+      const FarmsScreen(),
       const SurveillanceDashboardScreen(),
-      VisitEntryScreen(
-        preselectedAnimalId: null,
-      ),
+      const LedgerScreen(),
     ];
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('VetLedger AI', style: TextStyle(fontWeight: FontWeight.w800)),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.edit_calendar_rounded, color: AppTheme.primaryTeal),
+            tooltip: 'Quick Clinical Visit',
+            onPressed: _openQuickVisit,
+          ),
           IconButton(
             icon: const Icon(Icons.settings_ethernet_rounded, color: AppTheme.textSecondary),
             tooltip: 'Backend API Settings',
@@ -137,14 +153,19 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
             label: 'Animals',
           ),
           NavigationDestination(
+            icon: Icon(Icons.agriculture_outlined),
+            selectedIcon: Icon(Icons.agriculture_rounded),
+            label: 'Farms',
+          ),
+          NavigationDestination(
             icon: Icon(Icons.analytics_outlined),
             selectedIcon: Icon(Icons.analytics_rounded),
             label: 'Surveillance',
           ),
           NavigationDestination(
-            icon: Icon(Icons.edit_calendar_outlined),
-            selectedIcon: Icon(Icons.edit_calendar_rounded),
-            label: 'New Visit',
+            icon: Icon(Icons.account_balance_wallet_outlined),
+            selectedIcon: Icon(Icons.account_balance_wallet_rounded),
+            label: 'Ledger',
           ),
         ],
       ),

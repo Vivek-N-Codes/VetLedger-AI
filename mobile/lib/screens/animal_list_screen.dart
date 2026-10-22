@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/animal.dart';
+import '../models/farm.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 import 'animal_profile_screen.dart';
@@ -86,6 +87,182 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
     });
   }
 
+  void _showRegisterAnimalDialog() async {
+    final formKey = GlobalKey<FormState>();
+    final nameCtrl = TextEditingController();
+    final breedCtrl = TextEditingController();
+    final ageCtrl = TextEditingController();
+    final tagCtrl = TextEditingController();
+    final notesCtrl = TextEditingController();
+    String species = 'CATTLE';
+    String sex = 'FEMALE';
+    int? selectedFarmId;
+    List<FarmSummary> farms = [];
+
+    try {
+      farms = await ApiService.getFarmsList();
+      if (farms.isNotEmpty) {
+        selectedFarmId = farms.first.id;
+      }
+    } catch (_) {}
+
+    if (!mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Row(
+            children: [
+              Icon(Icons.add_circle_outline_rounded, color: AppTheme.primaryTeal),
+              SizedBox(width: 8),
+              Text('Register Animal', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  DropdownButtonFormField<int>(
+                    value: selectedFarmId,
+                    decoration: const InputDecoration(
+                      labelText: 'Farm & Location *',
+                      prefixIcon: Icon(Icons.agriculture_rounded, color: AppTheme.primaryTeal),
+                    ),
+                    items: farms.map((f) {
+                      return DropdownMenuItem<int>(
+                        value: f.id,
+                        child: Text('${f.name} (${f.villageName})'),
+                      );
+                    }).toList(),
+                    onChanged: (val) => setDialogState(() => selectedFarmId = val),
+                    validator: (v) => v == null ? 'Please select a farm' : null,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: nameCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Animal Name *',
+                      hintText: 'e.g., Gauri, Bella',
+                      prefixIcon: Icon(Icons.badge_rounded, color: AppTheme.primaryTeal),
+                    ),
+                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Name is required' : null,
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    value: species,
+                    decoration: const InputDecoration(
+                      labelText: 'Species *',
+                      prefixIcon: Icon(Icons.category_rounded, color: AppTheme.primaryTeal),
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 'CATTLE', child: Text('Cattle')),
+                      DropdownMenuItem(value: 'BUFFALO', child: Text('Buffalo')),
+                      DropdownMenuItem(value: 'GOAT', child: Text('Goat')),
+                      DropdownMenuItem(value: 'SHEEP', child: Text('Sheep')),
+                    ],
+                    onChanged: (val) => setDialogState(() => species = val ?? 'CATTLE'),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: breedCtrl,
+                          decoration: const InputDecoration(labelText: 'Breed', hintText: 'e.g., Murrah'),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: TextFormField(
+                          controller: ageCtrl,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          decoration: const InputDecoration(labelText: 'Age (Yrs)', hintText: 'e.g., 3.0'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    value: sex,
+                    decoration: const InputDecoration(
+                      labelText: 'Sex *',
+                      prefixIcon: Icon(Icons.male_rounded, color: AppTheme.primaryTeal),
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 'FEMALE', child: Text('Female')),
+                      DropdownMenuItem(value: 'MALE', child: Text('Male')),
+                    ],
+                    onChanged: (val) => setDialogState(() => sex = val ?? 'FEMALE'),
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: tagCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Tag / RFID (Optional)',
+                      hintText: 'e.g., IN-9821-B',
+                      prefixIcon: Icon(Icons.qr_code_rounded, color: AppTheme.primaryTeal),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: notesCtrl,
+                    maxLines: 2,
+                    decoration: const InputDecoration(
+                      labelText: 'Notes / Identification',
+                      hintText: 'Physical markings, ear notches, etc.',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (formKey.currentState?.validate() ?? false) {
+                  try {
+                    final req = CreateAnimalRequest(
+                      name: nameCtrl.text.trim(),
+                      species: species,
+                      breed: breedCtrl.text.trim().isNotEmpty ? breedCtrl.text.trim() : null,
+                      ageYears: ageCtrl.text.trim().isNotEmpty ? double.tryParse(ageCtrl.text.trim()) : null,
+                      sex: sex,
+                      farmId: selectedFarmId!,
+                      tagRfid: tagCtrl.text.trim().isNotEmpty ? tagCtrl.text.trim() : null,
+                      notes: notesCtrl.text.trim().isNotEmpty ? notesCtrl.text.trim() : null,
+                    );
+                    await ApiService.registerAnimal(req);
+                    if (ctx.mounted) Navigator.pop(ctx);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Animal registered successfully!'),
+                        backgroundColor: AppTheme.successGreen,
+                      ),
+                    );
+                    _loadAnimals();
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(e.toString()), backgroundColor: AppTheme.alertRed),
+                    );
+                  }
+                }
+              },
+              child: const Text('Register'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -99,7 +276,15 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
           ),
         ],
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: AppTheme.primaryTeal,
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.add),
+        label: const Text('Register Animal', style: TextStyle(fontWeight: FontWeight.bold)),
+        onPressed: _showRegisterAnimalDialog,
+      ),
       body: Column(
+
         children: [
           // Search Bar
           Padding(
