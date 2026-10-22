@@ -13,7 +13,8 @@ class FarmsScreen extends StatefulWidget {
 }
 
 class _FarmsScreenState extends State<FarmsScreen> {
-  List<FarmSummary> _farms = [];
+  List<FarmSummary> _allFarms = [];
+  List<FarmSummary> _filteredFarms = [];
   List<Map<String, dynamic>> _villages = [];
   bool _isLoading = true;
   String? _error;
@@ -35,6 +36,26 @@ class _FarmsScreenState extends State<FarmsScreen> {
     super.dispose();
   }
 
+  void _applyFilters() {
+    final query = _searchQuery.trim().toLowerCase();
+    setState(() {
+      _filteredFarms = _allFarms.where((f) {
+        // Village filter
+        if (_selectedVillageId != null && f.villageId != null && f.villageId != _selectedVillageId) {
+          return false;
+        }
+        // Query match
+        if (query.isEmpty) return true;
+        final nameMatch = f.name.toLowerCase().contains(query);
+        final codeMatch = f.farmCode.toLowerCase().contains(query);
+        final ownerMatch = f.ownerName != null && f.ownerName!.toLowerCase().contains(query);
+        final villageMatch = f.villageName != null && f.villageName!.toLowerCase().contains(query);
+        final addressMatch = f.address != null && f.address!.toLowerCase().contains(query);
+        return nameMatch || codeMatch || ownerMatch || villageMatch || addressMatch;
+      }).toList();
+    });
+  }
+
   Future<void> _loadInitialData() async {
     setState(() => _isLoading = true);
     try {
@@ -44,10 +65,11 @@ class _FarmsScreenState extends State<FarmsScreen> {
       ]);
       if (mounted) {
         setState(() {
-          _farms = results[0] as List<FarmSummary>;
+          _allFarms = results[0] as List<FarmSummary>;
           _villages = results[1] as List<Map<String, dynamic>>;
           _isLoading = false;
           _error = null;
+          _applyFilters();
         });
       }
     } catch (e) {
@@ -68,8 +90,9 @@ class _FarmsScreenState extends State<FarmsScreen> {
       );
       if (mounted) {
         setState(() {
-          _farms = farms;
+          _allFarms = farms;
           _error = null;
+          _applyFilters();
         });
       }
     } catch (e) {
@@ -302,21 +325,21 @@ class _FarmsScreenState extends State<FarmsScreen> {
                   decoration: InputDecoration(
                     hintText: 'Search by farm name, code, or owner...',
                     prefixIcon: const Icon(Icons.search_rounded, color: AppTheme.primaryTeal),
-                    suffixIcon: _searchQuery.isNotEmpty
+                    suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
                             icon: const Icon(Icons.clear_rounded),
                             onPressed: () {
                               _searchController.clear();
-                              setState(() => _searchQuery = '');
-                              _refreshFarms();
+                              _searchQuery = '';
+                              _applyFilters();
                             },
                           )
                         : null,
                     isDense: true,
                   ),
                   onChanged: (val) {
-                    setState(() => _searchQuery = val);
-                    _refreshFarms();
+                    _searchQuery = val;
+                    _applyFilters();
                   },
                 ),
                 const SizedBox(height: 10),
@@ -332,8 +355,10 @@ class _FarmsScreenState extends State<FarmsScreen> {
                         checkmarkColor: AppTheme.primaryTeal,
                         onSelected: (selected) {
                           if (selected) {
-                            setState(() => _selectedVillageId = null);
-                            _refreshFarms();
+                            setState(() {
+                              _selectedVillageId = null;
+                              _applyFilters();
+                            });
                           }
                         },
                       ),
@@ -349,8 +374,10 @@ class _FarmsScreenState extends State<FarmsScreen> {
                             selectedColor: AppTheme.primaryLight,
                             checkmarkColor: AppTheme.primaryTeal,
                             onSelected: (selected) {
-                              setState(() => _selectedVillageId = selected ? vId : null);
-                              _refreshFarms();
+                              setState(() {
+                                _selectedVillageId = selected ? vId : null;
+                                _applyFilters();
+                              });
                             },
                           ),
                         );
@@ -383,7 +410,7 @@ class _FarmsScreenState extends State<FarmsScreen> {
                           ),
                         ),
                       )
-                    : _farms.isEmpty
+                    : _filteredFarms.isEmpty
                         ? Center(
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
@@ -408,9 +435,9 @@ class _FarmsScreenState extends State<FarmsScreen> {
                             color: AppTheme.primaryTeal,
                             child: ListView.builder(
                               padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 80),
-                              itemCount: _farms.length,
+                              itemCount: _filteredFarms.length,
                               itemBuilder: (ctx, idx) {
-                                final farm = _farms[idx];
+                                final farm = _filteredFarms[idx];
                                 return Card(
                                   margin: const EdgeInsets.only(bottom: 12),
                                   elevation: 0,

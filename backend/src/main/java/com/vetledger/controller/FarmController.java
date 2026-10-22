@@ -24,8 +24,10 @@ public class FarmController {
     @GetMapping
     public ResponseEntity<List<FarmSummaryDto>> getFarms(
             @RequestParam(required = false) Long villageId,
-            @RequestParam(required = false) String query) {
-        return ResponseEntity.ok(farmService.getFarms(villageId, query));
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false) String search) {
+        String effectiveQuery = (query != null && !query.trim().isEmpty()) ? query.trim() : (search != null ? search.trim() : null);
+        return ResponseEntity.ok(farmService.getFarms(villageId, effectiveQuery));
     }
 
     @GetMapping("/{id}")

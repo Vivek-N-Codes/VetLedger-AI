@@ -125,7 +125,10 @@ class ApiService {
   static Future<List<FarmSummary>> getFarmsList({int? villageId, String? search}) async {
     final params = <String, String>{};
     if (villageId != null) params['villageId'] = villageId.toString();
-    if (search != null && search.trim().isNotEmpty) params['search'] = search.trim();
+    if (search != null && search.trim().isNotEmpty) {
+      params['query'] = search.trim();
+      params['search'] = search.trim();
+    }
 
     final uri = Uri.parse('$baseUrl/farms').replace(queryParameters: params.isNotEmpty ? params : null);
     final response = await http.get(uri).timeout(const Duration(seconds: 8));
