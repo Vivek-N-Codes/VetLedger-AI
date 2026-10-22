@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: vetledger-backend
+    env: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    region: oregon
+    healthCheckPath: /api/health
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: vetledger-db
+          property: connectionString
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: vetledger-db
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: vetledger-db
+          property: password
+      - key: GEMINI_API_KEY
+        sync: false
+
+databases:
+  - name: vetledger-db
+    databaseName: vetledger_ai
+    user: postgres
+    plan: free
+    region: oregon
