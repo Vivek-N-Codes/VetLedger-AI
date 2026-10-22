@@ -137,9 +137,19 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
       const LedgerScreen(),
     ];
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(LocaleService.t('app_title'), style: const TextStyle(fontWeight: FontWeight.w800)),
+    return PopScope(
+      canPop: _currentIndex == 0,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        if (_currentIndex != 0) {
+          setState(() {
+            _currentIndex = 0;
+          });
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(LocaleService.t('app_title'), style: const TextStyle(fontWeight: FontWeight.w800)),
         actions: [
           // Multilingual Selector (EN / HI / MR)
           PopupMenuButton<String>(
@@ -249,6 +259,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 }

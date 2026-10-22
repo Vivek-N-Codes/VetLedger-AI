@@ -555,12 +555,12 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
                 ],
               ),
               const SizedBox(height: 8),
-              Row(
+              Wrap(
+                spacing: 8,
+                runSpacing: 4,
                 children: [
                   _infoChip(Icons.category_outlined, '${animal.species} • ${animal.breed ?? 'Native'}'),
-                  const SizedBox(width: 10),
                   _infoChip(Icons.cake_outlined, '${animal.ageYears ?? 0} yrs'),
-                  const SizedBox(width: 10),
                   _infoChip(Icons.male, animal.sex),
                 ],
               ),

@@ -41,7 +41,7 @@ class _FarmsScreenState extends State<FarmsScreen> {
     setState(() {
       _filteredFarms = _allFarms.where((f) {
         // Village filter
-        if (_selectedVillageId != null && f.villageId != null && f.villageId != _selectedVillageId) {
+        if (_selectedVillageId != null && f.villageId != _selectedVillageId) {
           return false;
         }
         // Query match
@@ -49,7 +49,7 @@ class _FarmsScreenState extends State<FarmsScreen> {
         final nameMatch = f.name.toLowerCase().contains(query);
         final codeMatch = f.farmCode.toLowerCase().contains(query);
         final ownerMatch = f.ownerName != null && f.ownerName!.toLowerCase().contains(query);
-        final villageMatch = f.villageName != null && f.villageName!.toLowerCase().contains(query);
+        final villageMatch = f.villageName.toLowerCase().contains(query);
         final addressMatch = f.address != null && f.address!.toLowerCase().contains(query);
         return nameMatch || codeMatch || ownerMatch || villageMatch || addressMatch;
       }).toList();
@@ -531,17 +531,14 @@ class _FarmsScreenState extends State<FarmsScreen> {
                                             children: [
                                               const Icon(Icons.person_outline_rounded, size: 15, color: AppTheme.textMuted),
                                               const SizedBox(width: 4),
-                                              Text(
-                                                'Owner: ${farm.ownerName ?? 'Not Assigned'}',
-                                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-                                              ),
-                                              if (farm.ownerPhone != null && farm.ownerPhone!.isNotEmpty) ...[
-                                                const SizedBox(width: 8),
-                                                Text(
-                                                  '(${farm.ownerPhone})',
-                                                  style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                                              Expanded(
+                                                child: Text(
+                                                  'Owner: ${farm.ownerName ?? 'Not Assigned'}${farm.ownerPhone != null && farm.ownerPhone!.isNotEmpty ? ' (${farm.ownerPhone})' : ''}',
+                                                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
                                                 ),
-                                              ],
+                                              ),
                                             ],
                                           ),
                                           if (farm.address != null && farm.address!.isNotEmpty) ...[

@@ -18,9 +18,11 @@ public class PaymentDto {
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+    public Long getPaymentId() { return id; }
 
     public String getPaymentNumber() { return paymentNumber; }
     public void setPaymentNumber(String paymentNumber) { this.paymentNumber = paymentNumber; }
+    public String getReceiptNumber() { return paymentNumber; }
 
     public Long getOwnerId() { return ownerId; }
     public void setOwnerId(Long ownerId) { this.ownerId = ownerId; }

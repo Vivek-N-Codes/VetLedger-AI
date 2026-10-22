@@ -115,8 +115,8 @@ class PaymentItem {
 
   factory PaymentItem.fromJson(Map<String, dynamic> json) {
     return PaymentItem(
-      paymentId: json['paymentId'] as int? ?? 0,
-      receiptNumber: json['receiptNumber'] as String? ?? '',
+      paymentId: (json['paymentId'] ?? json['id']) as int? ?? 0,
+      receiptNumber: (json['receiptNumber'] ?? json['paymentNumber']) as String? ?? '',
       paymentDate: json['paymentDate'] as String? ?? '',
       amount: (json['amount'] as num?)?.toDouble() ?? 0.0,
       paymentMethod: json['paymentMethod'] as String? ?? 'CASH',
@@ -256,8 +256,8 @@ class PaymentReceipt {
     }
 
     return PaymentReceipt(
-      paymentId: json['paymentId'] as int? ?? 0,
-      receiptNumber: json['receiptNumber'] as String? ?? '',
+      paymentId: (json['paymentId'] ?? json['id']) as int? ?? 0,
+      receiptNumber: (json['receiptNumber'] ?? json['paymentNumber']) as String? ?? '',
       paymentDate: json['paymentDate'] as String? ?? '',
       amount: (json['amount'] as num?)?.toDouble() ?? (json['amountReceived'] as num?)?.toDouble() ?? 0.0,
       paymentMethod: json['paymentMethod'] as String? ?? 'CASH',

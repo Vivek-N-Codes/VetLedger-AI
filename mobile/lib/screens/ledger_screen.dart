@@ -349,7 +349,14 @@ class _LedgerScreenState extends State<LedgerScreen> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('Visit #${a.visitId} (${a.animalName ?? 'Animal'})', style: const TextStyle(fontSize: 11)),
+                            Expanded(
+                              child: Text(
+                                'Visit #${a.visitId} (${a.animalName ?? 'Animal'})',
+                                style: const TextStyle(fontSize: 11),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
                             Text('₹${a.allocatedAmount.toStringAsFixed(2)}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                           ],
                         ),
@@ -450,9 +457,12 @@ class _LedgerScreenState extends State<LedgerScreen> {
                                         Row(
                                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                           children: [
-                                            Text(
-                                              owner.name,
-                                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                            Expanded(
+                                              child: Text(
+                                                owner.name,
+                                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
                                             ),
                                             Text(
                                               '₹${owner.outstandingBalance.toStringAsFixed(0)}',
@@ -468,9 +478,12 @@ class _LedgerScreenState extends State<LedgerScreen> {
                                         Row(
                                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                           children: [
-                                            Text(
-                                              '${owner.phone} • ${owner.villageName ?? 'General'}',
-                                              style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                                            Expanded(
+                                              child: Text(
+                                                '${owner.phone} • ${owner.villageName ?? 'General'}',
+                                                style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
                                             ),
                                             Text(
                                               owner.outstandingBalance > 0 ? 'Due Balance' : 'Fully Settled',
@@ -483,18 +496,18 @@ class _LedgerScreenState extends State<LedgerScreen> {
                                           ],
                                         ),
                                         const SizedBox(height: 8),
-                                        Row(
+                                        Wrap(
+                                          spacing: 12,
+                                          runSpacing: 4,
                                           children: [
                                             Text(
                                               'Billed: ₹${owner.totalBilled.toStringAsFixed(0)}',
                                               style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
                                             ),
-                                            const SizedBox(width: 12),
                                             Text(
                                               'Paid: ₹${owner.totalPaid.toStringAsFixed(0)}',
                                               style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
                                             ),
-                                            const SizedBox(width: 12),
                                             Text(
                                               '${owner.totalAnimals} head across ${owner.totalFarms} farm(s)',
                                               style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
@@ -655,10 +668,14 @@ class _LedgerScreenState extends State<LedgerScreen> {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    '${v.animalName} (${v.farmName})',
-                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                  Expanded(
+                                    child: Text(
+                                      '${v.animalName} (${v.farmName})',
+                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
+                                  const SizedBox(width: 8),
                                   Text(v.visitDate, style: const TextStyle(fontSize: 12, color: AppTheme.textMuted)),
                                 ],
                               ),
@@ -672,8 +689,10 @@ class _LedgerScreenState extends State<LedgerScreen> {
                                   color: AppTheme.surfaceBackground,
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                child: Wrap(
+                                  spacing: 10,
+                                  runSpacing: 6,
+                                  crossAxisAlignment: WrapCrossAlignment.center,
                                   children: [
                                     Text('Consult: ₹${v.consultationFee.toStringAsFixed(0)}', style: const TextStyle(fontSize: 11)),
                                     Text('Services: ₹${v.serviceFee.toStringAsFixed(0)}', style: const TextStyle(fontSize: 11)),
@@ -730,8 +749,12 @@ class _LedgerScreenState extends State<LedgerScreen> {
                           title: Text(
                             '₹${p.amount.toStringAsFixed(2)} via ${p.paymentMethod}',
                             style: const TextStyle(fontWeight: FontWeight.bold),
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          subtitle: Text('Receipt: ${p.receiptNumber} • ${p.paymentDate}'),
+                          subtitle: Text(
+                            'Receipt: ${p.receiptNumber} • ${p.paymentDate}',
+                            overflow: TextOverflow.ellipsis,
+                          ),
                           trailing: OutlinedButton(
                             child: const Text('Receipt', style: TextStyle(fontSize: 12)),
                             onPressed: () async {

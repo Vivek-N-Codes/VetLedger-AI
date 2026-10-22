@@ -223,6 +223,8 @@ public class LedgerService {
 
         BigDecimal prevCharges = visitRepository.findTotalChargesByOwnerId(owner.getId());
         BigDecimal allPayments = paymentRepository.findTotalPaidByOwnerId(owner.getId());
+        if (prevCharges == null) prevCharges = BigDecimal.ZERO;
+        if (allPayments == null) allPayments = BigDecimal.ZERO;
 
         List<PaymentAllocation> allocations = allocationRepository.findByPaymentId(paymentId);
         List<PaymentReceiptDto.AllocationItem> allocationItems = allocations.stream().map(pa -> {

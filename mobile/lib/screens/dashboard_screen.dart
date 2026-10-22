@@ -286,10 +286,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                         Text(
                                           f.farmName,
                                           style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppTheme.textPrimary),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
                                         Text(
                                           '${f.villageName}${f.ownerName.isNotEmpty ? ' • ${f.ownerName}' : ''}',
                                           style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ],
                                     ),
@@ -566,30 +570,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: AppTheme.primaryLight,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          visit.animalCode ?? 'ANM-${visit.animalId}',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.primaryTeal,
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primaryLight,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            visit.animalCode ?? 'ANM-${visit.animalId}',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.primaryTeal,
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        visit.animalName ?? '',
-                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-                      ),
-                    ],
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            visit.animalName ?? '',
+                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
+                  const SizedBox(width: 8),
                   StatusBadge.severity(visit.severity),
                 ],
               ),
@@ -597,6 +607,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Text(
                 visit.presentingComplaint,
                 style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary, fontWeight: FontWeight.w500),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 6),
               Row(
@@ -607,7 +619,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   const SizedBox(width: 12),
                   const Icon(Icons.location_on_outlined, size: 12, color: AppTheme.textMuted),
                   const SizedBox(width: 4),
-                  Text('${visit.farmName ?? ''} (${visit.villageName ?? ''})', style: const TextStyle(fontSize: 11, color: AppTheme.textMuted)),
+                  Expanded(
+                    child: Text(
+                      '${visit.farmName ?? ''} (${visit.villageName ?? ''})',
+                      style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                 ],
               ),
             ],
