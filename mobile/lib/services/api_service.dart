@@ -23,6 +23,10 @@ class ApiService {
       return fromDefine;
     }
     if (kIsWeb) {
+      final origin = Uri.base.origin;
+      if (origin.isNotEmpty && !origin.startsWith('file://')) {
+        return '$origin/api';
+      }
       return 'http://localhost:8080/api';
     }
     try {

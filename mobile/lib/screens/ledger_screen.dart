@@ -14,6 +14,7 @@ class LedgerScreen extends StatefulWidget {
 }
 
 class _LedgerScreenState extends State<LedgerScreen> {
+  List<OwnerLedgerSummary> _allOwners = [];
   List<OwnerLedgerSummary> _owners = [];
   OwnerLedgerDetail? _selectedOwnerDetail;
   bool _isLoading = true;
@@ -26,26 +27,45 @@ class _LedgerScreenState extends State<LedgerScreen> {
   void initState() {
     super.initState();
     _loadOwners();
+    _searchController.addListener(_applyFilters);
     AppDataSync.changeNotifier.addListener(_loadOwners);
   }
 
   @override
   void dispose() {
     AppDataSync.changeNotifier.removeListener(_loadOwners);
+    _searchController.removeListener(_applyFilters);
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _applyFilters() {
+    final query = _searchController.text.trim().toLowerCase();
+    setState(() {
+      _searchQuery = _searchController.text;
+      if (query.isEmpty) {
+        _owners = List.from(_allOwners);
+      } else {
+        _owners = _allOwners.where((o) {
+          return o.name.toLowerCase().contains(query) ||
+              o.phone.toLowerCase().contains(query) ||
+              (o.villageName != null && o.villageName!.toLowerCase().contains(query));
+        }).toList();
+      }
+    });
   }
 
   Future<void> _loadOwners() async {
     setState(() => _isLoading = true);
     try {
-      final list = await ApiService.getOwnerLedgers(search: _searchQuery);
+      final list = await ApiService.getOwnerLedgers();
       if (mounted) {
         setState(() {
-          _owners = list;
+          _allOwners = list;
           _isLoading = false;
           _error = null;
         });
+        _applyFilters();
 
         if (widget.initialOwnerId != null && _selectedOwnerDetail == null) {
           _loadOwnerDetail(widget.initialOwnerId!);
@@ -392,17 +412,12 @@ class _LedgerScreenState extends State<LedgerScreen> {
                       icon: const Icon(Icons.clear_rounded),
                       onPressed: () {
                         _searchController.clear();
-                        setState(() => _searchQuery = '');
-                        _loadOwners();
                       },
                     )
                   : null,
               isDense: true,
             ),
-            onChanged: (val) {
-              setState(() => _searchQuery = val);
-              _loadOwners();
-            },
+            onChanged: (_) {},
           ),
         ),
         const Divider(height: 1, color: AppTheme.borderSubtle),

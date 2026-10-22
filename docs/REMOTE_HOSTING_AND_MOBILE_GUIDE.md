@@ -34,11 +34,25 @@ netsh advfirewall firewall add rule name="VetLedger API" dir=in action=allow pro
   ```
 - Tap **"Save & Apply"**. The app immediately reloads data from your machine's live database.
 
+## 🌐 Option 1: Live Multi-Device Gateway via Unified Server (Web + API in One Port)
+
+We provide a built-in reverse proxy gateway script at [server.js](file:///d:/Hackathons/VetLedger-AI/scripts/server.js):
+- Serves the Flutter Web UI on `/`
+- Reverse-proxies `/api` directly to Spring Boot backend (`http://localhost:8080/api`)
+- Eliminates CORS and Mixed-Content issues across all mobile & desktop browsers!
+
+### Start the Gateway:
+```powershell
+node scripts/server.js
+```
+
+### Expose Globally to Any Network via Localtunnel / Cloudflare:
+```powershell
+npx localtunnel --port 5000
+```
+This generates a secure public HTTPS URL (e.g. `https://xxxx.loca.lt`) accessible on any phone or computer on 4G, 5G, or external Wi-Fi. If prompted for a tunnel password, enter your machine's external IP (`curl https://loca.lt/mytunnelpassword`).
+
 ---
-
-## 🚀 Option 2: Instant Public URL with Ngrok (Global Access)
-
-To make your local backend reachable from **any phone anywhere in the world** (over 4G/5G mobile data) without hosting yet:
 
 1. Start your local Spring Boot backend on port 8080.
 2. In a new terminal, launch ngrok (or cloudflared):

@@ -20,8 +20,12 @@ public class LedgerController {
     }
 
     @GetMapping("/owners")
-    public ResponseEntity<List<OwnerLedgerSummaryDto>> getOwnerLedgers(@RequestParam(required = false) String query) {
-        return ResponseEntity.ok(ledgerService.getOwnerLedgers(query));
+    public ResponseEntity<List<OwnerLedgerSummaryDto>> getOwnerLedgers(
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false) String search) {
+        String effectiveQuery = (query != null && !query.trim().isEmpty()) ? query.trim()
+                : (search != null && !search.trim().isEmpty()) ? search.trim() : null;
+        return ResponseEntity.ok(ledgerService.getOwnerLedgers(effectiveQuery));
     }
 
     @GetMapping("/owners/{id}")
