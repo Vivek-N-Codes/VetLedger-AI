@@ -22,19 +22,15 @@ class ApiService {
     if (fromDefine.isNotEmpty) {
       return fromDefine;
     }
+    const defaultCloudApi = 'https://vetledger-backend.onrender.com/api';
     if (kIsWeb) {
       final origin = Uri.base.origin;
-      if (origin.isNotEmpty && !origin.startsWith('file://')) {
+      if (origin.isNotEmpty && !origin.startsWith('file://') && !origin.contains('localhost')) {
         return '$origin/api';
       }
-      return 'http://localhost:8080/api';
+      return defaultCloudApi;
     }
-    try {
-      if (Platform.isAndroid) {
-        return 'http://10.0.2.2:8080/api';
-      }
-    } catch (_) {}
-    return 'http://localhost:8080/api';
+    return defaultCloudApi;
   }
 
   static void setCustomBaseUrl(String url) {
