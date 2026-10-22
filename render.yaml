@@ -8,10 +8,18 @@ services:
     region: oregon
     healthCheckPath: /api/health
     envVars:
-      - key: SPRING_DATASOURCE_URL
+      - key: DB_HOST
         fromDatabase:
           name: vetledger-db
-          property: jdbcConnectionString
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: vetledger-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: vetledger-db
+          property: database
       - key: SPRING_DATASOURCE_USERNAME
         fromDatabase:
           name: vetledger-db
