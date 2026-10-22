@@ -15,7 +15,7 @@ public class DashboardStatsDto {
     private String syntheticDataNotice;
 
     public DashboardStatsDto() {
-        this.syntheticDataNotice = "VetLedger AI Prototype: All data is synthetic for demonstration and decision support only.";
+        this.syntheticDataNotice = "";
     }
 
     public static class VillageStatDto {

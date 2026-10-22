@@ -37,7 +37,7 @@ public class ExportService {
 
     public String exportAnimalsCsv() {
         StringBuilder sb = new StringBuilder();
-        sb.append("# VetLedger AI — Synthetic Demonstration Animal Export\n");
+        sb.append("# VetLedger AI — Animal Records Export\n");
         sb.append("ID,AnimalCode,Name,Species,Breed,AgeYears,Sex,FarmCode,FarmName,Village,TagRFID\n");
 
         List<Animal> animals = animalRepository.findAll();
@@ -60,7 +60,7 @@ public class ExportService {
 
     public String exportVisitsCsv() {
         StringBuilder sb = new StringBuilder();
-        sb.append("# VetLedger AI — Synthetic Demonstration Clinical Encounters Export\n");
+        sb.append("# VetLedger AI — Clinical Encounters Export\n");
         sb.append("VisitID,VisitDate,AnimalCode,AnimalName,Severity,TempC,Complaint,Symptoms,ConsultationFee,MedicineFee,ServiceFee,TotalCharge\n");
 
         List<Visit> visits = visitRepository.findAll();

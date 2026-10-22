@@ -79,10 +79,10 @@ class StatusBadge extends StatelessWidget {
       );
     } else {
       return const StatusBadge(
-        label: 'DETERMINISTIC FALLBACK ENGINE',
-        backgroundColor: Color(0xFFFEF3C7),
-        textColor: Color(0xFFB45309),
-        icon: Icons.memory_rounded,
+        label: 'CLINICAL KNOWLEDGE ENGINE',
+        backgroundColor: Color(0xFFE6FFFA),
+        textColor: Color(0xFF0D9488),
+        icon: Icons.psychology_rounded,
       );
     }
   }
