@@ -145,24 +145,55 @@ public class FarmService {
 
         Owner owner = null;
         if (request.getOwnerId() != null) {
-            owner = ownerRepository.findById(request.getOwnerId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Owner not found with id: " + request.getOwnerId()));
-        } else if (request.getOwnerName() != null && !request.getOwnerName().trim().isEmpty()) {
-            // Find or create owner with same name
-            List<Owner> existing = ownerRepository.searchOwners(request.getOwnerName().trim());
-            if (!existing.isEmpty()) {
-                owner = existing.get(0);
+            owner = ownerRepository.findById(request.getOwnerId()).orElse(null);
+        }
+        
+        String requestedOwnerName = request.getOwnerName() != null ? request.getOwnerName().trim() : null;
+        if (owner == null && requestedOwnerName != null && !requestedOwnerName.isEmpty()) {
+            // Find or create owner with matching full name
+            List<Owner> existing = ownerRepository.searchOwners(requestedOwnerName);
+            java.util.Optional<Owner> exactMatch = existing.stream()
+                    .filter(o -> o.getFullName() != null && o.getFullName().equalsIgnoreCase(requestedOwnerName))
+                    .findFirst();
+            if (exactMatch.isPresent()) {
+                owner = exactMatch.get();
+                if (request.getContactNumber() != null && !request.getContactNumber().trim().isEmpty() &&
+                        (owner.getContactNumber() == null || owner.getContactNumber().trim().isEmpty())) {
+                    owner.setContactNumber(request.getContactNumber().trim());
+                    owner = ownerRepository.save(owner);
+                }
             } else {
                 Owner newOwner = new Owner();
                 long count = ownerRepository.count() + 1;
-                newOwner.setOwnerCode(String.format("OWN-%03d", count));
-                newOwner.setFullName(request.getOwnerName().trim());
-                newOwner.setContactNumber(request.getContactNumber());
+                String ownerCode = String.format("OWN-%03d", count);
+                while (ownerRepository.existsByOwnerCode(ownerCode)) {
+                    count++;
+                    ownerCode = String.format("OWN-%03d", count);
+                }
+                newOwner.setOwnerCode(ownerCode);
+                newOwner.setFullName(requestedOwnerName);
+                newOwner.setContactNumber(request.getContactNumber() != null ? request.getContactNumber().trim() : null);
                 newOwner.setVillage(village);
                 newOwner.setAddress(request.getAddress());
-                newOwner.setNotes("Created during farm registration");
+                newOwner.setNotes("Farmer registered with farm: " + request.getFarmName().trim());
                 owner = ownerRepository.save(newOwner);
             }
+        } else if (owner == null) {
+            // Guarantee an Owner entity always exists for the farm so visits are permanently tracked in ledger
+            Owner newOwner = new Owner();
+            long count = ownerRepository.count() + 1;
+            String ownerCode = String.format("OWN-%03d", count);
+            while (ownerRepository.existsByOwnerCode(ownerCode)) {
+                count++;
+                ownerCode = String.format("OWN-%03d", count);
+            }
+            newOwner.setOwnerCode(ownerCode);
+            newOwner.setFullName("Farmer of " + request.getFarmName().trim());
+            newOwner.setContactNumber(request.getContactNumber() != null ? request.getContactNumber().trim() : null);
+            newOwner.setVillage(village);
+            newOwner.setAddress(request.getAddress());
+            newOwner.setNotes("Default farm keeper created for financial ledger");
+            owner = ownerRepository.save(newOwner);
         }
 
         String farmCode = request.getFarmCode();
@@ -172,6 +203,10 @@ public class FarmService {
                     : "FRM";
             long count = farmRepository.count() + 1;
             farmCode = String.format("FRM-%s-%03d", villagePrefix, count);
+            while (farmRepository.existsByFarmCode(farmCode)) {
+                count++;
+                farmCode = String.format("FRM-%s-%03d", villagePrefix, count);
+            }
         } else {
             farmCode = farmCode.trim();
             if (farmRepository.existsByFarmCode(farmCode)) {
@@ -183,8 +218,8 @@ public class FarmService {
         farm.setFarmCode(farmCode);
         farm.setFarmName(request.getFarmName().trim());
         farm.setOwner(owner);
-        farm.setOwnerName(owner != null ? owner.getFullName() : (request.getOwnerName() != null ? request.getOwnerName() : "Unknown Owner"));
-        farm.setContactNumber(request.getContactNumber() != null ? request.getContactNumber() : (owner != null ? owner.getContactNumber() : null));
+        farm.setOwnerName(owner.getFullName());
+        farm.setContactNumber(owner.getContactNumber() != null ? owner.getContactNumber() : request.getContactNumber());
         farm.setVillage(village);
         farm.setAddress(request.getAddress());
         farm.setNotes(request.getNotes());

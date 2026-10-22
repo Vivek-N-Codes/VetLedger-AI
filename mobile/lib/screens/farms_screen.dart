@@ -82,6 +82,8 @@ class _FarmsScreenState extends State<FarmsScreen> {
   void _showAddFarmDialog() async {
     final formKey = GlobalKey<FormState>();
     final nameCtrl = TextEditingController();
+    final ownerNameCtrl = TextEditingController();
+    final phoneCtrl = TextEditingController();
     final addressCtrl = TextEditingController();
     final notesCtrl = TextEditingController();
 
@@ -91,9 +93,6 @@ class _FarmsScreenState extends State<FarmsScreen> {
 
     try {
       owners = await ApiService.getOwners();
-      if (owners.isNotEmpty) {
-        dialogOwnerId = owners.first['id'] as int;
-      }
     } catch (_) {}
 
     if (!mounted) return;
@@ -115,6 +114,7 @@ class _FarmsScreenState extends State<FarmsScreen> {
               key: formKey,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   TextFormField(
                     controller: nameCtrl,
@@ -142,21 +142,60 @@ class _FarmsScreenState extends State<FarmsScreen> {
                     validator: (v) => v == null ? 'Please select a village' : null,
                   ),
                   const SizedBox(height: 12),
-                  DropdownButtonFormField<int>(
-                    value: dialogOwnerId,
+                  TextFormField(
+                    controller: ownerNameCtrl,
                     decoration: const InputDecoration(
-                      labelText: 'Owner / Farmer *',
+                      labelText: 'Farmer / Owner Name *',
+                      hintText: 'e.g., Ramesh Patil, Sunita Deshmukh',
                       prefixIcon: Icon(Icons.person_rounded, color: AppTheme.primaryTeal),
                     ),
-                    items: owners.map((o) {
-                      return DropdownMenuItem<int>(
-                        value: o['id'] as int,
-                        child: Text('${o['name']} (${o['phone']})'),
-                      );
-                    }).toList(),
-                    onChanged: (val) => setDialogState(() => dialogOwnerId = val),
-                    validator: (v) => v == null ? 'Please select an owner' : null,
+                    onChanged: (_) {
+                      setDialogState(() => dialogOwnerId = null);
+                    },
+                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Please enter the farmer/owner name' : null,
                   ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: phoneCtrl,
+                    keyboardType: TextInputType.phone,
+                    decoration: const InputDecoration(
+                      labelText: 'Farmer Contact Number',
+                      hintText: 'e.g., +91 98220 12345',
+                      prefixIcon: Icon(Icons.phone_rounded, color: AppTheme.primaryTeal),
+                    ),
+                  ),
+                  if (owners.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    DropdownButtonFormField<int>(
+                      value: dialogOwnerId,
+                      isExpanded: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Or Autofill From Registered Farmers',
+                        prefixIcon: Icon(Icons.person_search_rounded, color: AppTheme.textMuted),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      ),
+                      items: owners.map((o) {
+                        return DropdownMenuItem<int>(
+                          value: o['id'] as int,
+                          child: Text(
+                            '${o['name']} (${o['phone'] ?? 'No phone'})',
+                            style: const TextStyle(fontSize: 13),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (val) {
+                        if (val != null) {
+                          final selected = owners.firstWhere((o) => o['id'] == val);
+                          setDialogState(() {
+                            dialogOwnerId = val;
+                            ownerNameCtrl.text = selected['name']?.toString() ?? '';
+                            phoneCtrl.text = selected['phone']?.toString() ?? '';
+                          });
+                        }
+                      },
+                    ),
+                  ],
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: addressCtrl,
@@ -189,17 +228,23 @@ class _FarmsScreenState extends State<FarmsScreen> {
               onPressed: () async {
                 if (formKey.currentState?.validate() ?? false) {
                   try {
+                    final farmName = nameCtrl.text.trim();
+                    final ownerName = ownerNameCtrl.text.trim();
+                    final phone = phoneCtrl.text.trim();
                     await ApiService.createFarm({
-                      'name': nameCtrl.text.trim(),
+                      'farmName': farmName,
+                      'name': farmName,
                       'villageId': dialogVillageId,
+                      'ownerName': ownerName,
+                      'contactNumber': phone.isNotEmpty ? phone : null,
                       'ownerId': dialogOwnerId,
                       'address': addressCtrl.text.trim().isNotEmpty ? addressCtrl.text.trim() : null,
                       'notes': notesCtrl.text.trim().isNotEmpty ? notesCtrl.text.trim() : null,
                     });
                     if (ctx.mounted) Navigator.pop(ctx);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Farm registered successfully!'),
+                      SnackBar(
+                        content: Text('Farm "$farmName" registered for $ownerName!'),
                         backgroundColor: AppTheme.successGreen,
                       ),
                     );

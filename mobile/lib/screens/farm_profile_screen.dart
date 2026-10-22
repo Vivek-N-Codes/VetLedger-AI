@@ -6,6 +6,7 @@ import '../services/app_data_sync.dart';
 import '../theme/app_theme.dart';
 import 'animal_profile_screen.dart';
 import 'ledger_screen.dart';
+import 'visit_entry_screen.dart';
 
 class FarmProfileScreen extends StatefulWidget {
   final int farmId;
@@ -357,23 +358,22 @@ class _FarmProfileScreenState extends State<FarmProfileScreen> with SingleTicker
                           ],
                         ),
                       ),
-                      if (farm.ownerId != null)
-                        OutlinedButton.icon(
-                          icon: const Icon(Icons.receipt_long_rounded, size: 16),
-                          label: const Text('Owner Ledger', style: TextStyle(fontSize: 12)),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                            side: const BorderSide(color: AppTheme.primaryTeal),
-                          ),
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => LedgerScreen(initialOwnerId: farm.ownerId),
-                              ),
-                            );
-                          },
+                      OutlinedButton.icon(
+                        icon: const Icon(Icons.receipt_long_rounded, size: 16),
+                        label: const Text('Owner Ledger', style: TextStyle(fontSize: 12)),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                          side: const BorderSide(color: AppTheme.primaryTeal),
                         ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => LedgerScreen(initialOwnerId: farm.ownerId),
+                            ),
+                          );
+                        },
+                      ),
                     ],
                   ),
                 ),
@@ -448,7 +448,32 @@ class _FarmProfileScreenState extends State<FarmProfileScreen> with SingleTicker
                                 '${animal.species} • ${animal.breed ?? 'Native'} • ${animal.sex} • ${animal.ageYears != null ? '${animal.ageYears} yrs' : 'Age unknown'}',
                                 style: const TextStyle(fontSize: 12),
                               ),
-                              trailing: const Icon(Icons.chevron_right_rounded, color: AppTheme.textMuted),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.note_add_rounded, color: AppTheme.primaryTeal, size: 20),
+                                    tooltip: 'Log Visit for ${animal.name}',
+                                    onPressed: () async {
+                                      final result = await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => VisitEntryScreen(
+                                            preselectedAnimalId: animal.id,
+                                            preselectedAnimalCode: animal.animalCode,
+                                            preselectedAnimalName: animal.name,
+                                          ),
+                                        ),
+                                      );
+                                      if (result == true) {
+                                        _loadFarmDetail();
+                                        AppDataSync.notifyDataChanged();
+                                      }
+                                    },
+                                  ),
+                                  const Icon(Icons.chevron_right_rounded, color: AppTheme.textMuted),
+                                ],
+                              ),
                               onTap: () {
                                 Navigator.push(
                                   context,

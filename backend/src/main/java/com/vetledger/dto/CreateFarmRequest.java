@@ -27,11 +27,17 @@ public class CreateFarmRequest {
     public String getFarmName() { return farmName; }
     public void setFarmName(String farmName) { this.farmName = farmName; }
 
+    // Aliases for compatibility
+    public String getName() { return farmName; }
+    public void setName(String name) { if (this.farmName == null || this.farmName.trim().isEmpty()) this.farmName = name; }
+
     public Long getOwnerId() { return ownerId; }
     public void setOwnerId(Long ownerId) { this.ownerId = ownerId; }
 
     public String getOwnerName() { return ownerName; }
     public void setOwnerName(String ownerName) { this.ownerName = ownerName; }
+
+    public void setFarmerName(String farmerName) { if (this.ownerName == null || this.ownerName.trim().isEmpty()) this.ownerName = farmerName; }
 
     public String getContactNumber() { return contactNumber; }
     public void setContactNumber(String contactNumber) { this.contactNumber = contactNumber; }
