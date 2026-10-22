@@ -98,13 +98,17 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
     String sex = 'FEMALE';
     int? selectedFarmId;
     List<FarmSummary> farms = [];
+    bool isLoadingFarms = true;
 
     try {
       farms = await ApiService.getFarmsList();
       if (farms.isNotEmpty) {
         selectedFarmId = farms.first.id;
       }
-    } catch (_) {}
+      isLoadingFarms = false;
+    } catch (_) {
+      isLoadingFarms = false;
+    }
 
     if (!mounted) return;
 
@@ -125,22 +129,60 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
               key: formKey,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  DropdownButtonFormField<int>(
-                    value: selectedFarmId,
-                    decoration: const InputDecoration(
-                      labelText: 'Farm & Location *',
-                      prefixIcon: Icon(Icons.agriculture_rounded, color: AppTheme.primaryTeal),
-                    ),
-                    items: farms.map((f) {
-                      return DropdownMenuItem<int>(
-                        value: f.id,
-                        child: Text('${f.name} (${f.villageName})'),
-                      );
-                    }).toList(),
-                    onChanged: (val) => setDialogState(() => selectedFarmId = val),
-                    validator: (v) => v == null ? 'Please select a farm' : null,
+                  const Text(
+                    'Select Farm (Which Farm This Animal Belongs To) *',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.textPrimary),
                   ),
+                  const SizedBox(height: 6),
+                  if (isLoadingFarms)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8.0),
+                      child: Row(
+                        children: [
+                          SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+                          SizedBox(width: 8),
+                          Text('Loading farms list...'),
+                        ],
+                      ),
+                    )
+                  else if (farms.isEmpty)
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.amber.shade300),
+                      ),
+                      child: const Text('No registered farms found. Please create a farm first.'),
+                    )
+                  else
+                    DropdownButtonFormField<int>(
+                      value: selectedFarmId,
+                      isExpanded: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Belongs to Farm *',
+                        hintText: 'Select farm this animal belongs to...',
+                        prefixIcon: Icon(Icons.agriculture_rounded, color: AppTheme.primaryTeal),
+                      ),
+                      items: farms.map((f) {
+                        final displayName = f.name.isNotEmpty ? f.name : 'Farm #${f.id} (${f.farmCode})';
+                        final locationOwner = f.ownerName != null && f.ownerName!.isNotEmpty
+                            ? '${f.villageName} • Owner: ${f.ownerName}'
+                            : f.villageName;
+                        return DropdownMenuItem<int>(
+                          value: f.id,
+                          child: Text(
+                            '$displayName ($locationOwner)',
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (val) => setDialogState(() => selectedFarmId = val),
+                      validator: (v) => v == null ? 'Please select which farm this animal belongs to' : null,
+                    ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: nameCtrl,
