@@ -7,6 +7,7 @@ import 'screens/surveillance_dashboard_screen.dart';
 import 'screens/visit_entry_screen.dart';
 import 'services/api_service.dart';
 import 'services/app_data_sync.dart';
+import 'services/locale_service.dart';
 import 'theme/app_theme.dart';
 
 void main() {
@@ -37,6 +38,22 @@ class MainNavigationShell extends StatefulWidget {
 
 class _MainNavigationShellState extends State<MainNavigationShell> {
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    LocaleService.currentLocale.addListener(_onLocaleChanged);
+  }
+
+  @override
+  void dispose() {
+    LocaleService.currentLocale.removeListener(_onLocaleChanged);
+    super.dispose();
+  }
+
+  void _onLocaleChanged() {
+    if (mounted) setState(() {});
+  }
 
   void _onTabSelected(int index) {
     setState(() {
@@ -122,16 +139,76 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('VetLedger AI', style: TextStyle(fontWeight: FontWeight.w800)),
+        title: Text(LocaleService.t('app_title'), style: const TextStyle(fontWeight: FontWeight.w800)),
         actions: [
+          // Multilingual Selector (EN / HI / MR)
+          PopupMenuButton<String>(
+            tooltip: LocaleService.t('change_language'),
+            offset: const Offset(0, 45),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            icon: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryTeal.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppTheme.primaryTeal.withOpacity(0.35)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.translate_rounded, size: 16, color: AppTheme.primaryTeal),
+                  const SizedBox(width: 5),
+                  Text(
+                    LocaleService.languageName,
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primaryTeal),
+                  ),
+                ],
+              ),
+            ),
+            onSelected: (code) {
+              LocaleService.setLocale(code);
+            },
+            itemBuilder: (ctx) => [
+              const PopupMenuItem(
+                value: 'en',
+                child: Row(
+                  children: [
+                    Text('🇬🇧', style: TextStyle(fontSize: 18)),
+                    SizedBox(width: 10),
+                    Text('English', style: TextStyle(fontWeight: FontWeight.w600)),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'hi',
+                child: Row(
+                  children: [
+                    Text('🇮🇳', style: TextStyle(fontSize: 18)),
+                    SizedBox(width: 10),
+                    Text('हिन्दी (Hindi)', style: TextStyle(fontWeight: FontWeight.w600)),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'mr',
+                child: Row(
+                  children: [
+                    Text('🚩', style: TextStyle(fontSize: 18)),
+                    SizedBox(width: 10),
+                    Text('मराठी (Marathi)', style: TextStyle(fontWeight: FontWeight.w600)),
+                  ],
+                ),
+              ),
+            ],
+          ),
           IconButton(
             icon: const Icon(Icons.edit_calendar_rounded, color: AppTheme.primaryTeal),
-            tooltip: 'Quick Clinical Visit',
+            tooltip: LocaleService.t('quick_visit'),
             onPressed: _openQuickVisit,
           ),
           IconButton(
             icon: const Icon(Icons.settings_ethernet_rounded, color: AppTheme.textSecondary),
-            tooltip: 'Backend API Settings',
+            tooltip: LocaleService.t('backend_settings'),
             onPressed: _showConnectionConfig,
           ),
           const SizedBox(width: 8),
@@ -144,31 +221,31 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
         onDestinationSelected: _onTabSelected,
-        destinations: const [
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.dashboard_outlined),
-            selectedIcon: Icon(Icons.dashboard_rounded),
-            label: 'Dashboard',
+            icon: const Icon(Icons.dashboard_outlined),
+            selectedIcon: const Icon(Icons.dashboard_rounded),
+            label: LocaleService.t('dashboard'),
           ),
           NavigationDestination(
-            icon: Icon(Icons.pets_outlined),
-            selectedIcon: Icon(Icons.pets_rounded),
-            label: 'Animals',
+            icon: const Icon(Icons.pets_outlined),
+            selectedIcon: const Icon(Icons.pets_rounded),
+            label: LocaleService.t('animals'),
           ),
           NavigationDestination(
-            icon: Icon(Icons.agriculture_outlined),
-            selectedIcon: Icon(Icons.agriculture_rounded),
-            label: 'Farms',
+            icon: const Icon(Icons.agriculture_outlined),
+            selectedIcon: const Icon(Icons.agriculture_rounded),
+            label: LocaleService.t('farms'),
           ),
           NavigationDestination(
-            icon: Icon(Icons.analytics_outlined),
-            selectedIcon: Icon(Icons.analytics_rounded),
-            label: 'Surveillance',
+            icon: const Icon(Icons.analytics_outlined),
+            selectedIcon: const Icon(Icons.analytics_rounded),
+            label: LocaleService.t('surveillance'),
           ),
           NavigationDestination(
-            icon: Icon(Icons.account_balance_wallet_outlined),
-            selectedIcon: Icon(Icons.account_balance_wallet_rounded),
-            label: 'Ledger',
+            icon: const Icon(Icons.account_balance_wallet_outlined),
+            selectedIcon: const Icon(Icons.account_balance_wallet_rounded),
+            label: LocaleService.t('ledger'),
           ),
         ],
       ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/dashboard_stats.dart';
 import '../services/api_service.dart';
 import '../services/app_data_sync.dart';
+import '../services/locale_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/disclaimer_banner.dart';
 import '../widgets/status_badge.dart';
@@ -29,12 +30,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
     super.initState();
     _loadStats();
     AppDataSync.changeNotifier.addListener(_loadStats);
+    LocaleService.currentLocale.addListener(_onLocaleChange);
   }
 
   @override
   void dispose() {
     AppDataSync.changeNotifier.removeListener(_loadStats);
+    LocaleService.currentLocale.removeListener(_onLocaleChange);
     super.dispose();
+  }
+
+  void _onLocaleChange() {
+    if (mounted) setState(() {});
   }
 
   void _loadStats() {
@@ -125,17 +132,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 // Key Metric Cards Grid
                 Row(
                   children: [
-                    Expanded(child: _buildMetricCard('Total Animals', stats.totalAnimals.toString(), Icons.pets_rounded, AppTheme.primaryTeal)),
+                    Expanded(child: _buildMetricCard(LocaleService.t('total_animals'), stats.totalAnimals.toString(), Icons.pets_rounded, AppTheme.primaryTeal)),
                     const SizedBox(width: 10),
-                    Expanded(child: _buildMetricCard('Farms Tracked', stats.totalFarms.toString(), Icons.agriculture_rounded, AppTheme.secondaryEmerald)),
+                    Expanded(child: _buildMetricCard(LocaleService.t('farms_tracked'), stats.totalFarms.toString(), Icons.agriculture_rounded, AppTheme.secondaryEmerald)),
                   ],
                 ),
                 const SizedBox(height: 10),
                 Row(
                   children: [
-                    Expanded(child: _buildMetricCard('Villages Covered', stats.totalVillages.toString(), Icons.location_on_rounded, const Color(0xFF2563EB))),
+                    Expanded(child: _buildMetricCard(LocaleService.t('villages_covered'), stats.totalVillages.toString(), Icons.location_on_rounded, const Color(0xFF2563EB))),
                     const SizedBox(width: 10),
-                    Expanded(child: _buildMetricCard('Clinical Encounters', stats.totalVisits.toString(), Icons.medical_services_rounded, const Color(0xFF7C3AED))),
+                    Expanded(child: _buildMetricCard(LocaleService.t('quick_visit'), stats.totalVisits.toString(), Icons.medical_services_rounded, const Color(0xFF7C3AED))),
                   ],
                 ),
                 const SizedBox(height: 18),
