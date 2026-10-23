@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/clinical_intelligence.dart';
 import '../services/api_service.dart';
+import '../services/locale_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/disclaimer_banner.dart';
 import '../widgets/status_badge.dart';
@@ -46,11 +47,16 @@ class _ClinicalIntelligenceScreenState extends State<ClinicalIntelligenceScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Clinical AI Intelligence', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          LocaleService.code == 'mr'
+              ? 'एआय क्लिनिकल निदान व सल्ला'
+              : (LocaleService.code == 'hi' ? 'एआई क्लिनिकल निदान एवं सलाह' : 'Clinical AI Intelligence'),
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
-            tooltip: 'Re-analyze Records',
+            tooltip: LocaleService.t('refresh'),
             onPressed: _fetchIntelligence,
           ),
         ],
@@ -67,13 +73,21 @@ class _ClinicalIntelligenceScreenState extends State<ClinicalIntelligenceScreen>
                   children: [
                     const CircularProgressIndicator(color: AppTheme.primaryTeal),
                     const SizedBox(height: 20),
-                    const Text(
-                      'Analyzing Longitudinal Records...',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    Text(
+                      LocaleService.code == 'mr'
+                          ? 'क्लिनिकल डेटाचे सखोल विश्लेषण सुरू आहे...'
+                          : (LocaleService.code == 'hi'
+                              ? 'नैदानिक रिकॉर्ड का विश्लेषण हो रहा है...'
+                              : 'Analyzing Longitudinal Records...'),
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Synthesizing historical encounters for ${widget.animalName ?? "Animal #${widget.animalId}"}',
+                      LocaleService.code == 'mr'
+                          ? '${widget.animalName ?? "जनावर #${widget.animalId}"} च्या सर्व जुन्या व नवीन नोंदी तपासल्या जात आहेत.'
+                          : (LocaleService.code == 'hi'
+                              ? '${widget.animalName ?? "पशु #${widget.animalId}"} के पुराने एवं वर्तमान रिकॉर्ड का मिलान किया जा रहा है।'
+                              : 'Synthesizing historical encounters for ${widget.animalName ?? "Animal #${widget.animalId}"}'),
                       textAlign: TextAlign.center,
                       style: const TextStyle(fontSize: 13, color: AppTheme.textMuted),
                     ),
@@ -92,13 +106,18 @@ class _ClinicalIntelligenceScreenState extends State<ClinicalIntelligenceScreen>
                   children: [
                     const Icon(Icons.error_outline_rounded, size: 48, color: AppTheme.alertRed),
                     const SizedBox(height: 16),
-                    const Text('Intelligence Generation Failed', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text(
+                      LocaleService.code == 'mr'
+                          ? 'विश्लेषण लोड करण्यात अडचण'
+                          : (LocaleService.code == 'hi' ? 'विश्लेषण लोड करने में विफल' : 'Intelligence Generation Failed'),
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
                     const SizedBox(height: 8),
                     Text(snapshot.error.toString(), textAlign: TextAlign.center, style: const TextStyle(fontSize: 12, color: AppTheme.textMuted)),
                     const SizedBox(height: 16),
                     ElevatedButton.icon(
                       icon: const Icon(Icons.refresh),
-                      label: const Text('Retry Analysis'),
+                      label: Text(LocaleService.t('retry')),
                       onPressed: _fetchIntelligence,
                     ),
                   ],
@@ -127,9 +146,12 @@ class _ClinicalIntelligenceScreenState extends State<ClinicalIntelligenceScreen>
                               children: [
                                 Row(
                                   children: [
-                                    Text(
-                                      '${data.animalName} (${data.animalCode})',
-                                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                                    Flexible(
+                                      child: Text(
+                                        '${data.animalName} (${data.animalCode})',
+                                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
                                     if (data.isDraftAnalysis) ...[
                                       const SizedBox(width: 8),
@@ -139,14 +161,17 @@ class _ClinicalIntelligenceScreenState extends State<ClinicalIntelligenceScreen>
                                           color: AppTheme.warningBg,
                                           borderRadius: BorderRadius.circular(4),
                                         ),
-                                        child: const Text('DRAFT', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppTheme.warningAmber)),
+                                        child: Text(
+                                          LocaleService.code == 'mr' ? 'मसुदा' : (LocaleService.code == 'hi' ? 'प्रारूप' : 'DRAFT'),
+                                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppTheme.warningAmber),
+                                        ),
                                       ),
                                     ],
                                   ],
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  '${data.species} • ${data.breed ?? 'Native'} • ${data.farmName ?? ''} (${data.villageName ?? ''})',
+                                  '${LocaleService.translateSpecies(data.species)} • ${data.breed ?? 'Native'} • ${data.farmName ?? ''} (${data.villageName ?? ''})',
                                   style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
                                 ),
                               ],
@@ -174,8 +199,16 @@ class _ClinicalIntelligenceScreenState extends State<ClinicalIntelligenceScreen>
                             Expanded(
                               child: Text(
                                 data.isLiveLlm
-                                    ? 'Engine: Remote Gemini LLM (${data.modelName ?? 'gemini-1.5-flash'})'
-                                    : 'Engine: Deterministic Clinical Rules Fallback (${data.modelName ?? 'VetLedger-Heuristics'})',
+                                    ? (LocaleService.code == 'mr'
+                                        ? 'इंजिन: क्लाउड जेमिनी एआय मॉडेल (${data.modelName ?? 'gemini-1.5-flash'})'
+                                        : (LocaleService.code == 'hi'
+                                            ? 'इंजन: क्लाउड जेमिनी एआई मॉडल (${data.modelName ?? 'gemini-1.5-flash'})'
+                                            : 'Engine: Remote Gemini LLM (${data.modelName ?? 'gemini-1.5-flash'})'))
+                                    : (LocaleService.code == 'mr'
+                                        ? 'इंजिन: क्लिनिकल नियम फॉलबॅक (${data.modelName ?? 'VetLedger-Heuristics'})'
+                                        : (LocaleService.code == 'hi'
+                                            ? 'इंजन: नैदानिक नियम फॉलबैक (${data.modelName ?? 'VetLedger-Heuristics'})'
+                                            : 'Engine: Deterministic Clinical Rules Fallback (${data.modelName ?? 'VetLedger-Heuristics'})')),
                                 style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.textSecondary),
                               ),
                             ),
@@ -195,7 +228,9 @@ class _ClinicalIntelligenceScreenState extends State<ClinicalIntelligenceScreen>
                 _buildModule1Card(data.module1SymptomTracker!)
               else
                 _buildSectionCard(
-                  title: 'Module 1: Longitudinal Symptom Tracker',
+                  title: LocaleService.code == 'mr'
+                      ? 'मॉड्युल १: दीर्घकालीन लक्षण इतिहास'
+                      : (LocaleService.code == 'hi' ? 'मॉड्यूल 1: दीर्घकालिक लक्षण ट्रैकर' : 'Module 1: Longitudinal Symptom Tracker'),
                   icon: Icons.timeline_rounded,
                   iconColor: AppTheme.primaryTeal,
                   child: Text(data.clinicalSummary, style: const TextStyle(fontSize: 13)),
@@ -209,7 +244,9 @@ class _ClinicalIntelligenceScreenState extends State<ClinicalIntelligenceScreen>
                 _buildModule2Card(data.module2CurrentPresentation!)
               else if (data.clinicalSummary.isNotEmpty)
                 _buildSectionCard(
-                  title: 'Module 2: Current Clinical Presentation',
+                  title: LocaleService.code == 'mr'
+                      ? 'मॉड्युल २: सद्य क्लिनिकल लक्षणे'
+                      : (LocaleService.code == 'hi' ? 'मॉड्यूल 2: वर्तमान नैदानिक लक्षण' : 'Module 2: Current Clinical Presentation'),
                   icon: Icons.medical_information_rounded,
                   iconColor: const Color(0xFF2563EB),
                   child: Text(data.clinicalSummary, style: const TextStyle(fontSize: 13)),
@@ -223,11 +260,13 @@ class _ClinicalIntelligenceScreenState extends State<ClinicalIntelligenceScreen>
                 _buildModule3Card(data.module3HistoricalComparison!)
               else if (data.recurringSymptoms.isNotEmpty)
                 _buildSectionCard(
-                  title: 'Module 3: Historical Comparison',
+                  title: LocaleService.code == 'mr'
+                      ? 'मॉड्युल ३: ऐतिहासिक तुलना'
+                      : (LocaleService.code == 'hi' ? 'मॉड्यूल 3: ऐतिहासिक तुलना' : 'Module 3: Historical Comparison'),
                   icon: Icons.compare_arrows_rounded,
                   iconColor: const Color(0xFF7C3AED),
                   child: Column(
-                    children: data.recurringSymptoms.map((s) => Text('• $s')).toList(),
+                    children: data.recurringSymptoms.map((s) => Text('• ${LocaleService.translateSymptom(s)}')).toList(),
                   ),
                 ),
               const SizedBox(height: 16),
@@ -239,11 +278,13 @@ class _ClinicalIntelligenceScreenState extends State<ClinicalIntelligenceScreen>
                 _buildModule4Card(data.module4ConditionsToConsider!)
               else if (data.possibleConditionsToConsider.isNotEmpty)
                 _buildSectionCard(
-                  title: 'Module 4: Conditions to Consider',
+                  title: LocaleService.code == 'mr'
+                      ? 'मॉड्युल ४: संभाव्य रोग व निदान'
+                      : (LocaleService.code == 'hi' ? 'मॉड्यूल 4: विचारणीय संभावित स्थितियां' : 'Module 4: Conditions to Consider'),
                   icon: Icons.biotech_rounded,
                   iconColor: AppTheme.secondaryEmerald,
                   child: Column(
-                    children: data.possibleConditionsToConsider.map((c) => Text('• $c')).toList(),
+                    children: data.possibleConditionsToConsider.map((c) => Text('• ${LocaleService.translateDiagnosis(c)}')).toList(),
                   ),
                 ),
               const SizedBox(height: 16),
@@ -255,11 +296,13 @@ class _ClinicalIntelligenceScreenState extends State<ClinicalIntelligenceScreen>
                 _buildModule5Card(data.module5RiskIndicators!)
               else if (data.riskIndicators.isNotEmpty)
                 _buildSectionCard(
-                  title: 'Module 5: Risk Indicators',
+                  title: LocaleService.code == 'mr'
+                      ? 'मॉड्युल ५: जोखीम निर्देशक व वैद्यकीय चिंता'
+                      : (LocaleService.code == 'hi' ? 'मॉड्यूल 5: जोखिम संकेतक' : 'Module 5: Risk Indicators'),
                   icon: Icons.warning_amber_rounded,
                   iconColor: AppTheme.alertRed,
                   child: Column(
-                    children: data.riskIndicators.map((r) => Text('• $r')).toList(),
+                    children: data.riskIndicators.map((r) => Text('• ${LocaleService.translateAdvisory(r)}')).toList(),
                   ),
                 ),
               const SizedBox(height: 16),
@@ -271,11 +314,13 @@ class _ClinicalIntelligenceScreenState extends State<ClinicalIntelligenceScreen>
                 _buildModule6Card(data.module6RecommendedNextSteps!)
               else if (data.recommendedObservations.isNotEmpty)
                 _buildSectionCard(
-                  title: 'Module 6: Recommended Next Steps',
+                  title: LocaleService.code == 'mr'
+                      ? 'मॉड्युल ६: शिफारस केलेली पुढील पावले'
+                      : (LocaleService.code == 'hi' ? 'मॉड्यूल 6: अनुशंसित अगले कदम' : 'Module 6: Recommended Next Steps'),
                   icon: Icons.checklist_rounded,
                   iconColor: AppTheme.primaryTeal,
                   child: Column(
-                    children: data.recommendedObservations.map((o) => Text('• $o')).toList(),
+                    children: data.recommendedObservations.map((o) => Text('• ${LocaleService.translateAdvisory(o)}')).toList(),
                   ),
                 ),
               const SizedBox(height: 16),
@@ -287,10 +332,12 @@ class _ClinicalIntelligenceScreenState extends State<ClinicalIntelligenceScreen>
                 _buildModule7Card(data.module7ClinicalDecision!)
               else if (data.suggestedFollowUp != null)
                 _buildSectionCard(
-                  title: 'Module 7: Clinical Decision Template',
+                  title: LocaleService.code == 'mr'
+                      ? 'मॉड्युल ७: वैद्यकीय निर्णय आराखडा व पाठपुरावा'
+                      : (LocaleService.code == 'hi' ? 'मॉड्यूल 7: नैदानिक निर्णय प्रारूप' : 'Module 7: Clinical Decision Template'),
                   icon: Icons.assignment_turned_in_rounded,
                   iconColor: AppTheme.primaryTeal,
-                  child: Text(data.suggestedFollowUp!),
+                  child: Text(LocaleService.translateAdvisory(data.suggestedFollowUp!)),
                 ),
               const SizedBox(height: 16),
 
@@ -308,21 +355,34 @@ class _ClinicalIntelligenceScreenState extends State<ClinicalIntelligenceScreen>
   // MODULE 1 WIDGET
   // -------------------------------------------------------------
   Widget _buildModule1Card(Module1SymptomTracker mod) {
+    final title = LocaleService.code == 'mr'
+        ? 'मॉड्युल १: दीर्घकालीन लक्षण इतिहास'
+        : (LocaleService.code == 'hi' ? 'मॉड्यूल 1: दीर्घकालिक लक्षण ट्रैकर' : 'Module 1: Longitudinal Symptom Tracker');
+    final subtitle = LocaleService.code == 'mr'
+        ? '${mod.totalHistoricalVisits} ऐतिहासिक नोंदी उपलब्ध'
+        : (LocaleService.code == 'hi' ? '${mod.totalHistoricalVisits} ऐतिहासिक दौरे दर्ज' : '${mod.totalHistoricalVisits} historical visits on file');
+
     return _buildSectionCard(
-      title: 'Module 1: Longitudinal Symptom Tracker',
-      subtitle: '${mod.totalHistoricalVisits} historical visits on file',
+      title: title,
+      subtitle: subtitle,
       icon: Icons.timeline_rounded,
       iconColor: AppTheme.primaryTeal,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(mod.longitudinalSummary, style: const TextStyle(fontSize: 13, height: 1.4)),
+          Text(LocaleService.translateAdvisory(mod.longitudinalSummary), style: const TextStyle(fontSize: 13, height: 1.4)),
           if (mod.symptomItems.isNotEmpty) ...[
             const SizedBox(height: 12),
             ...mod.symptomItems.map((item) {
               Color statusColor = AppTheme.textMuted;
-              if (item.status == 'RECURRENT') statusColor = const Color(0xFF7C3AED);
-              if (item.status == 'NEW') statusColor = AppTheme.warningAmber;
+              String statusLabel = item.status;
+              if (item.status == 'RECURRENT') {
+                statusColor = const Color(0xFF7C3AED);
+                statusLabel = LocaleService.code == 'mr' ? 'वारंवार' : (LocaleService.code == 'hi' ? 'पुनरावृत्त' : 'RECURRENT');
+              } else if (item.status == 'NEW') {
+                statusColor = AppTheme.warningAmber;
+                statusLabel = LocaleService.code == 'mr' ? 'नवीन' : (LocaleService.code == 'hi' ? 'नया' : 'NEW');
+              }
 
               return Container(
                 margin: const EdgeInsets.only(bottom: 8),
@@ -338,7 +398,7 @@ class _ClinicalIntelligenceScreenState extends State<ClinicalIntelligenceScreen>
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(item.displayName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                        Text(LocaleService.translateSymptom(item.displayName), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
@@ -346,14 +406,14 @@ class _ClinicalIntelligenceScreenState extends State<ClinicalIntelligenceScreen>
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
-                            item.status,
+                            statusLabel,
                             style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: statusColor),
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 4),
-                    Text(item.presentationText, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                    Text(LocaleService.translateAdvisory(item.presentationText), style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
                     const SizedBox(height: 6),
                     LinearProgressIndicator(
                       value: item.percentage / 100.0,
@@ -376,15 +436,22 @@ class _ClinicalIntelligenceScreenState extends State<ClinicalIntelligenceScreen>
   // MODULE 2 WIDGET
   // -------------------------------------------------------------
   Widget _buildModule2Card(Module2CurrentPresentation mod) {
+    final title = LocaleService.code == 'mr'
+        ? 'मॉड्युल २: सद्य क्लिनिकल लक्षणे'
+        : (LocaleService.code == 'hi' ? 'मॉड्यूल 2: वर्तमान नैदानिक लक्षण' : 'Module 2: Current Clinical Presentation');
+    final complaintPrefix = LocaleService.code == 'mr' ? 'तक्रार:' : (LocaleService.code == 'hi' ? 'शिकायत:' : 'Complaint:');
+    final severityPrefix = LocaleService.code == 'mr' ? 'तीव्रता:' : (LocaleService.code == 'hi' ? 'गंभीरता:' : 'Severity:');
+    final onsetPrefix = LocaleService.code == 'mr' ? 'सुरुवात:' : (LocaleService.code == 'hi' ? 'शुरुआत:' : 'Onset:');
+
     return _buildSectionCard(
-      title: 'Module 2: Current Clinical Presentation',
-      subtitle: 'Recorded date: ${mod.visitDate}',
+      title: title,
+      subtitle: '${LocaleService.code == 'mr' ? 'नोंद तारीख:' : (LocaleService.code == 'hi' ? 'दर्ज तिथि:' : 'Recorded date:')} ${mod.visitDate}',
       icon: Icons.medical_information_rounded,
       iconColor: const Color(0xFF2563EB),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Complaint: ${mod.presentingComplaint}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+          Text('$complaintPrefix ${LocaleService.translateAdvisory(mod.presentingComplaint)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
           const SizedBox(height: 8),
           Row(
             children: [
@@ -392,10 +459,10 @@ class _ClinicalIntelligenceScreenState extends State<ClinicalIntelligenceScreen>
                 _badgeChip(Icons.thermostat_rounded, '${mod.temperatureCelsius}°C', AppTheme.alertRed),
                 const SizedBox(width: 8),
               ],
-              _badgeChip(Icons.speed_rounded, 'Severity: ${mod.severity}', AppTheme.warningAmber),
+              _badgeChip(Icons.speed_rounded, '$severityPrefix ${LocaleService.translateSeverity(mod.severity)}', AppTheme.warningAmber),
               if (mod.symptomOnsetDuration != null) ...[
                 const SizedBox(width: 8),
-                _badgeChip(Icons.timelapse_rounded, 'Onset: ${mod.symptomOnsetDuration}', AppTheme.primaryTeal),
+                _badgeChip(Icons.timelapse_rounded, '$onsetPrefix ${LocaleService.translateAdvisory(mod.symptomOnsetDuration!)}', AppTheme.primaryTeal),
               ],
             ],
           ),
@@ -410,17 +477,23 @@ class _ClinicalIntelligenceScreenState extends State<ClinicalIntelligenceScreen>
                   color: AppTheme.primaryLight,
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: Text(s, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.primaryTeal)),
+                child: Text(LocaleService.translateSymptom(s), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.primaryTeal)),
               )).toList(),
             ),
           ],
           if (mod.physicalExamFindings != null && mod.physicalExamFindings!.isNotEmpty) ...[
             const SizedBox(height: 10),
-            Text('Exam Findings: ${mod.physicalExamFindings}', style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+            Text(
+              '${LocaleService.code == 'mr' ? 'शारीरिक तपासणी निष्कर्ष' : (LocaleService.code == 'hi' ? 'शारीरिक परीक्षण निष्कर्ष' : 'Exam Findings')}: ${LocaleService.translateAdvisory(mod.physicalExamFindings!)}',
+              style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+            ),
           ],
           if (mod.priorTreatmentsNoted != null && mod.priorTreatmentsNoted!.isNotEmpty) ...[
             const SizedBox(height: 6),
-            Text('Prior Rx Noted: ${mod.priorTreatmentsNoted}', style: const TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+            Text(
+              '${LocaleService.code == 'mr' ? 'मागील उपचार' : (LocaleService.code == 'hi' ? 'पूर्व उपचार' : 'Prior Rx Noted')}: ${LocaleService.translateAdvisory(mod.priorTreatmentsNoted!)}',
+              style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+            ),
           ],
         ],
       ),
@@ -431,30 +504,43 @@ class _ClinicalIntelligenceScreenState extends State<ClinicalIntelligenceScreen>
   // MODULE 3 WIDGET
   // -------------------------------------------------------------
   Widget _buildModule3Card(Module3HistoricalComparison mod) {
+    final title = LocaleService.code == 'mr'
+        ? 'मॉड्युल ३: ऐतिहासिक तुलना'
+        : (LocaleService.code == 'hi' ? 'मॉड्यूल 3: ऐतिहासिक तुलना' : 'Module 3: Historical Comparison');
+
     return _buildSectionCard(
-      title: 'Module 3: Historical Comparison',
-      subtitle: 'Trajectory: ${mod.severityTrajectory}',
+      title: title,
+      subtitle: '${LocaleService.code == 'mr' ? 'प्रगती' : (LocaleService.code == 'hi' ? 'प्रक्षेपवक्र' : 'Trajectory')}: ${LocaleService.translateAdvisory(mod.severityTrajectory)}',
       icon: Icons.compare_arrows_rounded,
       iconColor: const Color(0xFF7C3AED),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (mod.sharedSymptoms.isNotEmpty) ...[
-            const Text('Shared with Past Encounters:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+            Text(
+              LocaleService.code == 'mr' ? 'मागील आजारांशी सामायिक लक्षणे:' : (LocaleService.code == 'hi' ? 'पिछले दौरों से साझा लक्षण:' : 'Shared with Past Encounters:'),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+            ),
             const SizedBox(height: 4),
-            Text(mod.sharedSymptoms.join(', '), style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+            Text(mod.sharedSymptoms.map((s) => LocaleService.translateSymptom(s)).join(', '), style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
             const SizedBox(height: 8),
           ],
           if (mod.newlyRecordedSymptoms.isNotEmpty) ...[
-            const Text('Newly Manifested Symptoms:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppTheme.warningAmber)),
+            Text(
+              LocaleService.code == 'mr' ? 'नव्यानं दिसणारी लक्षणे:' : (LocaleService.code == 'hi' ? 'नए प्रकट लक्षण:' : 'Newly Manifested Symptoms:'),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppTheme.warningAmber),
+            ),
             const SizedBox(height: 4),
-            Text(mod.newlyRecordedSymptoms.join(', '), style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+            Text(mod.newlyRecordedSymptoms.map((s) => LocaleService.translateSymptom(s)).join(', '), style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
             const SizedBox(height: 8),
           ],
           if (mod.documentedTreatmentResponses.isNotEmpty) ...[
-            const Text('Documented Prior Rx Responses:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+            Text(
+              LocaleService.code == 'mr' ? 'मागील उपचारांचा प्रतिसाद:' : (LocaleService.code == 'hi' ? 'दर्ज पूर्व उपचार प्रतिसाद:' : 'Documented Prior Rx Responses:'),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+            ),
             const SizedBox(height: 4),
-            ...mod.documentedTreatmentResponses.map((r) => Text('• $r', style: const TextStyle(fontSize: 12))),
+            ...mod.documentedTreatmentResponses.map((r) => Text('• ${LocaleService.translateAdvisory(r)}', style: const TextStyle(fontSize: 12))),
           ],
         ],
       ),
@@ -466,7 +552,9 @@ class _ClinicalIntelligenceScreenState extends State<ClinicalIntelligenceScreen>
   // -------------------------------------------------------------
   Widget _buildModule4Card(Module4ConditionsToConsider mod) {
     return _buildSectionCard(
-      title: 'Module 4: Possible Conditions to Consider',
+      title: LocaleService.code == 'mr'
+          ? 'मॉड्युल ४: संभाव्य रोग व निदान'
+          : (LocaleService.code == 'hi' ? 'मॉड्यूल 4: विचारणीय संभावित स्थितियां' : 'Module 4: Possible Conditions to Consider'),
       subtitle: mod.professionalNotice,
       icon: Icons.biotech_rounded,
       iconColor: AppTheme.secondaryEmerald,
@@ -489,7 +577,7 @@ class _ClinicalIntelligenceScreenState extends State<ClinicalIntelligenceScreen>
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        c.conditionName,
+                        LocaleService.translateDiagnosis(c.conditionName),
                         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF166534)),
                       ),
                     ),
@@ -497,15 +585,24 @@ class _ClinicalIntelligenceScreenState extends State<ClinicalIntelligenceScreen>
                 ),
                 if (c.supportingFindings.isNotEmpty) ...[
                   const SizedBox(height: 6),
-                  Text('Supporting Findings: ${c.supportingFindings.join("; ")}', style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                  Text(
+                    '${LocaleService.code == 'mr' ? 'पूरक क्लिनिकल निष्कर्ष' : (LocaleService.code == 'hi' ? 'सहायक निष्कर्ष' : 'Supporting Findings')}: ${c.supportingFindings.map((f) => LocaleService.translateAdvisory(f)).join("; ")}',
+                    style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                  ),
                 ],
                 if (c.distinguishingTestsOrExams.isNotEmpty) ...[
                   const SizedBox(height: 6),
-                  Text('Tests to Distinguish: ${c.distinguishingTestsOrExams.join("; ")}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.primaryTeal)),
+                  Text(
+                    '${LocaleService.code == 'mr' ? 'भेद निश्चित करणाऱ्या चाचण्या' : (LocaleService.code == 'hi' ? 'अंतर स्पष्ट करने वाले परीक्षण' : 'Tests to Distinguish')}: ${c.distinguishingTestsOrExams.map((t) => LocaleService.translateAdvisory(t)).join("; ")}',
+                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.primaryTeal),
+                  ),
                 ],
                 if (c.uncertaintyNote != null) ...[
                   const SizedBox(height: 4),
-                  Text('Note: ${c.uncertaintyNote!}', style: const TextStyle(fontSize: 11, fontStyle: FontStyle.italic, color: AppTheme.textMuted)),
+                  Text(
+                    '${LocaleService.code == 'mr' ? 'टीप' : (LocaleService.code == 'hi' ? 'नोट' : 'Note')}: ${LocaleService.translateAdvisory(c.uncertaintyNote!)}',
+                    style: const TextStyle(fontSize: 11, fontStyle: FontStyle.italic, color: AppTheme.textMuted),
+                  ),
                 ],
               ],
             ),
@@ -521,17 +618,29 @@ class _ClinicalIntelligenceScreenState extends State<ClinicalIntelligenceScreen>
   Widget _buildModule5Card(Module5RiskIndicators mod) {
     Color bannerColor = AppTheme.successBg;
     Color textColor = AppTheme.successGreen;
+    String urgencyLabel = mod.urgencyLevel;
     if (mod.urgencyLevel == 'CRITICAL_ATTENTION') {
       bannerColor = AppTheme.alertBg;
       textColor = AppTheme.alertRed;
+      urgencyLabel = LocaleService.code == 'mr' ? 'तातडीचे लक्ष आवश्यक' : (LocaleService.code == 'hi' ? 'अति-गंभीर ध्यान आवश्यक' : 'CRITICAL ATTENTION');
     } else if (mod.urgencyLevel == 'ELEVATED') {
       bannerColor = AppTheme.warningBg;
       textColor = AppTheme.warningAmber;
+      urgencyLabel = LocaleService.code == 'mr' ? 'वाढीव जोखीम' : (LocaleService.code == 'hi' ? 'बढ़ा हुआ जोखिम' : 'ELEVATED');
+    } else {
+      urgencyLabel = LocaleService.code == 'mr' ? 'सामान्य' : (LocaleService.code == 'hi' ? 'सामान्य' : 'ROUTINE');
     }
 
+    final title = LocaleService.code == 'mr'
+        ? 'मॉड्युल ५: जोखीम निर्देशक व वैद्यकीय चिंता'
+        : (LocaleService.code == 'hi' ? 'मॉड्यूल 5: जोखिम संकेतक और नैदानिक चिंताएं' : 'Module 5: Risk Indicators & Clinical Concerns');
+    final subtitle = LocaleService.code == 'mr'
+        ? 'नियम आणि एआय आधारित तातडीचे मूल्यांकन'
+        : (LocaleService.code == 'hi' ? 'नियम और एआई आधारित तत्कालिकता मूल्यांकन' : 'Deterministic and AI synthesized urgency assessment');
+
     return _buildSectionCard(
-      title: 'Module 5: Risk Indicators & Clinical Concerns',
-      subtitle: 'Deterministic and AI synthesized urgency assessment',
+      title: title,
+      subtitle: subtitle,
       icon: Icons.warning_amber_rounded,
       iconColor: textColor,
       cardColor: const Color(0xFFFFFBFB),
@@ -546,21 +655,30 @@ class _ClinicalIntelligenceScreenState extends State<ClinicalIntelligenceScreen>
               children: [
                 Icon(Icons.shield_outlined, size: 16, color: textColor),
                 const SizedBox(width: 6),
-                Text('Urgency Status: ${mod.urgencyLevel}', style: TextStyle(fontWeight: FontWeight.bold, color: textColor, fontSize: 13)),
+                Text(
+                  '${LocaleService.code == 'mr' ? 'तातडीची स्थिती:' : (LocaleService.code == 'hi' ? 'तत्कालिकता स्थिति:' : 'Urgency Status:')} $urgencyLabel',
+                  style: TextStyle(fontWeight: FontWeight.bold, color: textColor, fontSize: 13),
+                ),
               ],
             ),
           ),
           const SizedBox(height: 10),
           if (mod.deterministicRuleFlags.isNotEmpty) ...[
-            const Text('Deterministic Rule Flags:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppTheme.alertRed)),
+            Text(
+              LocaleService.code == 'mr' ? 'वैद्यकीय नियमांचे इशारे:' : (LocaleService.code == 'hi' ? 'नैदानिक नियम संकेत:' : 'Deterministic Rule Flags:'),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppTheme.alertRed),
+            ),
             const SizedBox(height: 4),
-            ...mod.deterministicRuleFlags.map((f) => Text('• $f', style: const TextStyle(fontSize: 12, color: AppTheme.alertRed))),
+            ...mod.deterministicRuleFlags.map((f) => Text('• ${LocaleService.translateAdvisory(f)}', style: const TextStyle(fontSize: 12, color: AppTheme.alertRed))),
             const SizedBox(height: 8),
           ],
           if (mod.aiInterpretations.isNotEmpty) ...[
-            const Text('Clinical Insights:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+            Text(
+              LocaleService.code == 'mr' ? 'क्लिनिकल अंतर्दृष्टी:' : (LocaleService.code == 'hi' ? 'नैदानिक अंतर्दृष्टि:' : 'Clinical Insights:'),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+            ),
             const SizedBox(height: 4),
-            ...mod.aiInterpretations.map((i) => Text('• $i', style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary))),
+            ...mod.aiInterpretations.map((i) => Text('• ${LocaleService.translateAdvisory(i)}', style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary))),
           ],
         ],
       ),
@@ -571,8 +689,12 @@ class _ClinicalIntelligenceScreenState extends State<ClinicalIntelligenceScreen>
   // MODULE 6 WIDGET
   // -------------------------------------------------------------
   Widget _buildModule6Card(Module6RecommendedNextSteps mod) {
+    final title = LocaleService.code == 'mr'
+        ? 'मॉड्युल ६: शिफारस केलेली पुढील पावले'
+        : (LocaleService.code == 'hi' ? 'मॉड्यूल 6: अनुशंसित अगले कदम' : 'Module 6: Recommended Next Steps');
+
     return _buildSectionCard(
-      title: 'Module 6: Recommended Next Steps',
+      title: title,
       subtitle: mod.veterinaryDecisionNotice,
       icon: Icons.checklist_rounded,
       iconColor: AppTheme.primaryTeal,
@@ -580,7 +702,10 @@ class _ClinicalIntelligenceScreenState extends State<ClinicalIntelligenceScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (mod.observationsToVerify.isNotEmpty) ...[
-            const Text('Observations to Verify at Chute:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+            Text(
+              LocaleService.code == 'mr' ? 'प्रत्यक्ष तपासणीत खात्री करण्याचे मुद्दे:' : (LocaleService.code == 'hi' ? 'प्रत्यक्ष जांच में सत्यापित करने योग्य बिंदु:' : 'Observations to Verify at Chute:'),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+            ),
             const SizedBox(height: 4),
             ...mod.observationsToVerify.map((o) => Padding(
                   padding: const EdgeInsets.only(bottom: 2),
@@ -588,16 +713,19 @@ class _ClinicalIntelligenceScreenState extends State<ClinicalIntelligenceScreen>
                     children: [
                       const Icon(Icons.check_box_outline_blank_rounded, size: 14, color: AppTheme.primaryTeal),
                       const SizedBox(width: 6),
-                      Expanded(child: Text(o, style: const TextStyle(fontSize: 12))),
+                      Expanded(child: Text(LocaleService.translateAdvisory(o), style: const TextStyle(fontSize: 12))),
                     ],
                   ),
                 )),
             const SizedBox(height: 8),
           ],
           if (mod.examinationsToConsider.isNotEmpty) ...[
-            const Text('Diagnostic Examinations to Consider:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+            Text(
+              LocaleService.code == 'mr' ? 'विचारार्थ निदान चाचण्या:' : (LocaleService.code == 'hi' ? 'विचारणीय नैदानिक परीक्षण:' : 'Diagnostic Examinations to Consider:'),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+            ),
             const SizedBox(height: 4),
-            ...mod.examinationsToConsider.map((e) => Text('• $e', style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary))),
+            ...mod.examinationsToConsider.map((e) => Text('• ${LocaleService.translateAdvisory(e)}', style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary))),
           ],
         ],
       ),
@@ -608,8 +736,12 @@ class _ClinicalIntelligenceScreenState extends State<ClinicalIntelligenceScreen>
   // MODULE 7 WIDGET
   // -------------------------------------------------------------
   Widget _buildModule7Card(Module7ClinicalDecisionTemplate mod) {
+    final title = LocaleService.code == 'mr'
+        ? 'मॉड्युल ७: वैद्यकीय निर्णय आराखडा व पाठपुरावा'
+        : (LocaleService.code == 'hi' ? 'मॉड्यूल 7: नैदानिक निर्णय प्रारूप और अनुवर्ती' : 'Module 7: Clinical Decision Template & Follow-up');
+
     return _buildSectionCard(
-      title: 'Module 7: Clinical Decision Template & Follow-up',
+      title: title,
       subtitle: mod.practitionerActionNotice,
       icon: Icons.assignment_turned_in_rounded,
       iconColor: AppTheme.primaryTeal,
@@ -617,9 +749,12 @@ class _ClinicalIntelligenceScreenState extends State<ClinicalIntelligenceScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (mod.suggestedAssessmentPrompt != null) ...[
-            const Text('Suggested Assessment Framework:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+            Text(
+              LocaleService.code == 'mr' ? 'सुचवलेला मूल्यांकन आराखडा:' : (LocaleService.code == 'hi' ? 'सुझाया गया मूल्यांकन ढांचा:' : 'Suggested Assessment Framework:'),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+            ),
             const SizedBox(height: 4),
-            Text(mod.suggestedAssessmentPrompt!, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary, height: 1.35)),
+            Text(LocaleService.translateAdvisory(mod.suggestedAssessmentPrompt!), style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary, height: 1.35)),
             const SizedBox(height: 8),
           ],
           if (mod.recommendedFollowUpWindow != null) ...[
@@ -627,15 +762,21 @@ class _ClinicalIntelligenceScreenState extends State<ClinicalIntelligenceScreen>
               children: [
                 const Icon(Icons.alarm_rounded, size: 16, color: AppTheme.primaryTeal),
                 const SizedBox(width: 6),
-                Text('Recommended Follow-up: ${mod.recommendedFollowUpWindow!}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                Text(
+                  '${LocaleService.code == 'mr' ? 'शिफारस केलेला पाठपुरावा:' : (LocaleService.code == 'hi' ? 'अनुशंसित अनुवर्ती:' : 'Recommended Follow-up:')} ${LocaleService.translateAdvisory(mod.recommendedFollowUpWindow!)}',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                ),
               ],
             ),
             const SizedBox(height: 8),
           ],
           if (mod.ownerAdviceGuidance != null) ...[
-            const Text('Owner Guidance to Communicate:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+            Text(
+              LocaleService.code == 'mr' ? 'पशुपालकास द्यावयाचा सल्ला व मार्गदर्शन:' : (LocaleService.code == 'hi' ? 'पशुपालक के लिए परामर्श और मार्गदर्शन:' : 'Owner Guidance to Communicate:'),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+            ),
             const SizedBox(height: 4),
-            Text(mod.ownerAdviceGuidance!, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+            Text(LocaleService.translateAdvisory(mod.ownerAdviceGuidance!), style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
           ],
         ],
       ),

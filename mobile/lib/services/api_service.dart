@@ -41,11 +41,13 @@ class ApiService {
     'Accept': 'application/json',
   };
 
+  static const Duration _timeout = Duration(seconds: 40);
+
   // -------------------------------------------------------------
   // HEALTH & DASHBOARD
   // -------------------------------------------------------------
   static Future<Map<String, dynamic>> getHealth() async {
-    final response = await http.get(Uri.parse('$baseUrl/health')).timeout(const Duration(seconds: 5));
+    final response = await http.get(Uri.parse('$baseUrl/health')).timeout(_timeout);
     if (response.statusCode == 200) {
       return jsonDecode(response.body) as Map<String, dynamic>;
     }
@@ -53,7 +55,7 @@ class ApiService {
   }
 
   static Future<DashboardStats> getDashboardStats() async {
-    final response = await http.get(Uri.parse('$baseUrl/dashboard')).timeout(const Duration(seconds: 8));
+    final response = await http.get(Uri.parse('$baseUrl/dashboard')).timeout(_timeout);
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       return DashboardStats.fromJson(data);
@@ -77,7 +79,7 @@ class ApiService {
     if (species != null && species.trim().isNotEmpty) params['species'] = species.trim();
 
     final uri = Uri.parse('$baseUrl/animals').replace(queryParameters: params.isNotEmpty ? params : null);
-    final response = await http.get(uri).timeout(const Duration(seconds: 8));
+    final response = await http.get(uri).timeout(_timeout);
     if (response.statusCode == 200) {
       final List list = jsonDecode(response.body) as List;
       return list.map((e) => AnimalSummary.fromJson(e as Map<String, dynamic>)).toList();
@@ -86,7 +88,7 @@ class ApiService {
   }
 
   static Future<AnimalDetail> getAnimalDetail(int id) async {
-    final response = await http.get(Uri.parse('$baseUrl/animals/$id')).timeout(const Duration(seconds: 8));
+    final response = await http.get(Uri.parse('$baseUrl/animals/$id')).timeout(_timeout);
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       return AnimalDetail.fromJson(data);
@@ -99,7 +101,7 @@ class ApiService {
       Uri.parse('$baseUrl/animals'),
       headers: _headers,
       body: jsonEncode(request.toJson()),
-    ).timeout(const Duration(seconds: 10));
+    ).timeout(_timeout);
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       final data = jsonDecode(response.body) as Map<String, dynamic>;
@@ -110,7 +112,7 @@ class ApiService {
   }
 
   static Future<List<VisitModel>> getAnimalVisits(int animalId) async {
-    final response = await http.get(Uri.parse('$baseUrl/animals/$animalId/visits')).timeout(const Duration(seconds: 8));
+    final response = await http.get(Uri.parse('$baseUrl/animals/$animalId/visits')).timeout(_timeout);
     if (response.statusCode == 200) {
       final List list = jsonDecode(response.body) as List;
       return list.map((e) => VisitModel.fromJson(e as Map<String, dynamic>)).toList();
@@ -130,7 +132,7 @@ class ApiService {
     }
 
     final uri = Uri.parse('$baseUrl/farms').replace(queryParameters: params.isNotEmpty ? params : null);
-    final response = await http.get(uri).timeout(const Duration(seconds: 8));
+    final response = await http.get(uri).timeout(_timeout);
     if (response.statusCode == 200) {
       final List list = jsonDecode(response.body) as List;
       return list.map((e) => FarmSummary.fromJson(e as Map<String, dynamic>)).toList();
@@ -139,7 +141,7 @@ class ApiService {
   }
 
   static Future<FarmDetail> getFarmDetail(int id) async {
-    final response = await http.get(Uri.parse('$baseUrl/farms/$id')).timeout(const Duration(seconds: 8));
+    final response = await http.get(Uri.parse('$baseUrl/farms/$id')).timeout(_timeout);
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       return FarmDetail.fromJson(data);
@@ -152,7 +154,7 @@ class ApiService {
       Uri.parse('$baseUrl/farms'),
       headers: _headers,
       body: jsonEncode(payload),
-    ).timeout(const Duration(seconds: 10));
+    ).timeout(_timeout);
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       final data = jsonDecode(response.body) as Map<String, dynamic>;
@@ -170,7 +172,7 @@ class ApiService {
       Uri.parse('$baseUrl/visits'),
       headers: _headers,
       body: jsonEncode(request.toJson()),
-    ).timeout(const Duration(seconds: 10));
+    ).timeout(_timeout);
 
     if (response.statusCode == 201 || response.statusCode == 200) {
       final data = jsonDecode(response.body) as Map<String, dynamic>;
@@ -183,7 +185,7 @@ class ApiService {
     final response = await http.post(
       Uri.parse('$baseUrl/animals/$animalId/clinical-intelligence'),
       headers: _headers,
-    ).timeout(const Duration(seconds: 14));
+    ).timeout(_timeout);
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body) as Map<String, dynamic>;
@@ -197,7 +199,7 @@ class ApiService {
       Uri.parse('$baseUrl/animals/draft-analysis'),
       headers: _headers,
       body: jsonEncode(draft.toJson()),
-    ).timeout(const Duration(seconds: 14));
+    ).timeout(_timeout);
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body) as Map<String, dynamic>;
@@ -211,7 +213,7 @@ class ApiService {
   // -------------------------------------------------------------
   static Future<List<SurveillanceCluster>> getSurveillanceClusters({int windowDays = 14}) async {
     final uri = Uri.parse('$baseUrl/surveillance/clusters?windowDays=$windowDays');
-    final response = await http.get(uri).timeout(const Duration(seconds: 8));
+    final response = await http.get(uri).timeout(_timeout);
     if (response.statusCode == 200) {
       final List list = jsonDecode(response.body) as List;
       return list.map((e) => SurveillanceCluster.fromJson(e as Map<String, dynamic>)).toList();
@@ -221,7 +223,7 @@ class ApiService {
 
   static Future<ClusterDetailModel> getClusterDetail(String clusterId, {int windowDays = 14}) async {
     final uri = Uri.parse('$baseUrl/surveillance/clusters/$clusterId?windowDays=$windowDays');
-    final response = await http.get(uri).timeout(const Duration(seconds: 8));
+    final response = await http.get(uri).timeout(_timeout);
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       return ClusterDetailModel.fromJson(data);
@@ -231,7 +233,7 @@ class ApiService {
 
   static Future<PopulationOverview> getPopulationOverview({int windowDays = 14}) async {
     final uri = Uri.parse('$baseUrl/surveillance/overview?windowDays=$windowDays');
-    final response = await http.get(uri).timeout(const Duration(seconds: 8));
+    final response = await http.get(uri).timeout(_timeout);
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       return PopulationOverview.fromJson(data);
@@ -247,7 +249,7 @@ class ApiService {
     if (search != null && search.trim().isNotEmpty) params['search'] = search.trim();
 
     final uri = Uri.parse('$baseUrl/ledger/owners').replace(queryParameters: params.isNotEmpty ? params : null);
-    final response = await http.get(uri).timeout(const Duration(seconds: 8));
+    final response = await http.get(uri).timeout(_timeout);
     if (response.statusCode == 200) {
       final List list = jsonDecode(response.body) as List;
       return list.map((e) => OwnerLedgerSummary.fromJson(e as Map<String, dynamic>)).toList();
@@ -257,7 +259,7 @@ class ApiService {
 
   static Future<OwnerLedgerDetail> getOwnerLedgerDetail(int ownerId) async {
     final uri = Uri.parse('$baseUrl/ledger/owners/$ownerId');
-    final response = await http.get(uri).timeout(const Duration(seconds: 8));
+    final response = await http.get(uri).timeout(_timeout);
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       return OwnerLedgerDetail.fromJson(data);
@@ -270,7 +272,7 @@ class ApiService {
       Uri.parse('$baseUrl/ledger/payments'),
       headers: _headers,
       body: jsonEncode(payload),
-    ).timeout(const Duration(seconds: 10));
+    ).timeout(_timeout);
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       final data = jsonDecode(response.body) as Map<String, dynamic>;
@@ -282,7 +284,7 @@ class ApiService {
 
   static Future<PaymentReceipt> getPaymentReceipt(int paymentId) async {
     final uri = Uri.parse('$baseUrl/ledger/payments/$paymentId/receipt');
-    final response = await http.get(uri).timeout(const Duration(seconds: 8));
+    final response = await http.get(uri).timeout(_timeout);
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       return PaymentReceipt.fromJson(data);
@@ -297,7 +299,7 @@ class ApiService {
     final uri = status != null
         ? Uri.parse('$baseUrl/follow-ups?status=$status')
         : Uri.parse('$baseUrl/follow-ups');
-    final response = await http.get(uri).timeout(const Duration(seconds: 8));
+    final response = await http.get(uri).timeout(_timeout);
     if (response.statusCode == 200) {
       final List list = jsonDecode(response.body) as List;
       return list.map((e) => ClinicalFollowUpModel.fromJson(e as Map<String, dynamic>)).toList();
@@ -310,7 +312,7 @@ class ApiService {
       Uri.parse('$baseUrl/follow-ups/$id/status'),
       headers: _headers,
       body: jsonEncode({'status': status, 'notes': notes}),
-    ).timeout(const Duration(seconds: 8));
+    ).timeout(_timeout);
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body) as Map<String, dynamic>;
@@ -323,7 +325,7 @@ class ApiService {
   // LOOKUPS & SEARCH
   // -------------------------------------------------------------
   static Future<List<Map<String, dynamic>>> getVillages() async {
-    final response = await http.get(Uri.parse('$baseUrl/villages')).timeout(const Duration(seconds: 5));
+    final response = await http.get(Uri.parse('$baseUrl/villages')).timeout(_timeout);
     if (response.statusCode == 200) {
       final List list = jsonDecode(response.body) as List;
       return list.cast<Map<String, dynamic>>();
@@ -335,7 +337,7 @@ class ApiService {
     final uri = villageId != null
         ? Uri.parse('$baseUrl/owners?villageId=$villageId')
         : Uri.parse('$baseUrl/owners');
-    final response = await http.get(uri).timeout(const Duration(seconds: 5));
+    final response = await http.get(uri).timeout(_timeout);
     if (response.statusCode == 200) {
       final List list = jsonDecode(response.body) as List;
       return list.cast<Map<String, dynamic>>();
@@ -347,7 +349,7 @@ class ApiService {
     final uri = villageId != null
         ? Uri.parse('$baseUrl/farms?villageId=$villageId')
         : Uri.parse('$baseUrl/farms');
-    final response = await http.get(uri).timeout(const Duration(seconds: 5));
+    final response = await http.get(uri).timeout(_timeout);
     if (response.statusCode == 200) {
       final List list = jsonDecode(response.body) as List;
       return list.cast<Map<String, dynamic>>();
@@ -356,7 +358,7 @@ class ApiService {
   }
 
   static Future<List<Map<String, String>>> getStandardSymptoms() async {
-    final response = await http.get(Uri.parse('$baseUrl/symptoms')).timeout(const Duration(seconds: 5));
+    final response = await http.get(Uri.parse('$baseUrl/symptoms')).timeout(_timeout);
     if (response.statusCode == 200) {
       final List list = jsonDecode(response.body) as List;
       return list.map((e) => Map<String, String>.from(e as Map)).toList();

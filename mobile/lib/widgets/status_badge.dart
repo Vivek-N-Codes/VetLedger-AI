@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/locale_service.dart';
 import '../theme/app_theme.dart';
 
 class StatusBadge extends StatelessWidget {
@@ -16,25 +17,26 @@ class StatusBadge extends StatelessWidget {
   });
 
   factory StatusBadge.severity(String severity) {
+    final localized = LocaleService.translateSeverity(severity);
     switch (severity.toUpperCase()) {
       case 'SEVERE':
-        return const StatusBadge(
-          label: 'SEVERE',
+        return StatusBadge(
+          label: localized,
           backgroundColor: AppTheme.alertBg,
           textColor: AppTheme.alertRed,
           icon: Icons.error_outline_rounded,
         );
       case 'MODERATE':
-        return const StatusBadge(
-          label: 'MODERATE',
+        return StatusBadge(
+          label: localized,
           backgroundColor: AppTheme.warningBg,
           textColor: AppTheme.warningAmber,
           icon: Icons.warning_amber_rounded,
         );
       case 'MILD':
       default:
-        return const StatusBadge(
-          label: 'MILD',
+        return StatusBadge(
+          label: localized,
           backgroundColor: AppTheme.successBg,
           textColor: AppTheme.successGreen,
           icon: Icons.check_circle_outline_rounded,
@@ -43,24 +45,33 @@ class StatusBadge extends StatelessWidget {
   }
 
   factory StatusBadge.risk(String riskLevel) {
+    String label;
+    if (LocaleService.code == 'mr') {
+      label = riskLevel.toUpperCase() == 'HIGH' ? 'उच्च धोका' : (riskLevel.toUpperCase() == 'ELEVATED' ? 'वाढलेला संसर्ग' : 'निरीक्षण');
+    } else if (LocaleService.code == 'hi') {
+      label = riskLevel.toUpperCase() == 'HIGH' ? 'उच्च जोखिम' : (riskLevel.toUpperCase() == 'ELEVATED' ? 'बढ़ा हुआ खतरा' : 'निगरानी');
+    } else {
+      label = riskLevel.toUpperCase() == 'HIGH' ? 'HIGH PRIORITY' : (riskLevel.toUpperCase() == 'ELEVATED' ? 'ELEVATED CLUSTER' : 'SURVEILLANCE WATCH');
+    }
+
     switch (riskLevel.toUpperCase()) {
       case 'HIGH':
-        return const StatusBadge(
-          label: 'HIGH PRIORITY',
+        return StatusBadge(
+          label: label,
           backgroundColor: AppTheme.alertBg,
           textColor: AppTheme.alertRed,
           icon: Icons.campaign_rounded,
         );
       case 'ELEVATED':
-        return const StatusBadge(
-          label: 'ELEVATED CLUSTER',
+        return StatusBadge(
+          label: label,
           backgroundColor: AppTheme.warningBg,
           textColor: AppTheme.warningAmber,
           icon: Icons.insights_rounded,
         );
       default:
-        return const StatusBadge(
-          label: 'SURVEILLANCE WATCH',
+        return StatusBadge(
+          label: label,
           backgroundColor: AppTheme.primaryLight,
           textColor: AppTheme.primaryTeal,
           icon: Icons.visibility_rounded,
@@ -70,18 +81,21 @@ class StatusBadge extends StatelessWidget {
 
   factory StatusBadge.aiSource(String source) {
     final isLive = source.toUpperCase().contains('LIVE');
+    String label;
     if (isLive) {
-      return const StatusBadge(
-        label: 'LIVE LLM INTELLIGENCE',
-        backgroundColor: Color(0xFFE0E7FF),
-        textColor: Color(0xFF4338CA),
+      label = LocaleService.code == 'mr' ? 'थेट एआय विश्लेषण' : (LocaleService.code == 'hi' ? 'लाइव एआई विश्लेषण' : 'LIVE LLM INTELLIGENCE');
+      return StatusBadge(
+        label: label,
+        backgroundColor: const Color(0xFFE0E7FF),
+        textColor: const Color(0xFF4338CA),
         icon: Icons.auto_awesome_rounded,
       );
     } else {
-      return const StatusBadge(
-        label: 'CLINICAL KNOWLEDGE ENGINE',
-        backgroundColor: Color(0xFFE6FFFA),
-        textColor: Color(0xFF0D9488),
+      label = LocaleService.code == 'mr' ? 'क्लिनिकल नॉलेज इंजिन' : (LocaleService.code == 'hi' ? 'क्लिनिकल नॉलेज इंजन' : 'CLINICAL KNOWLEDGE ENGINE');
+      return StatusBadge(
+        label: label,
+        backgroundColor: const Color(0xFFE6FFFA),
+        textColor: const Color(0xFF0D9488),
         icon: Icons.psychology_rounded,
       );
     }

@@ -159,9 +159,9 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
             icon: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: AppTheme.primaryTeal.withOpacity(0.12),
+                color: AppTheme.primaryTeal.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppTheme.primaryTeal.withOpacity(0.35)),
+                border: Border.all(color: AppTheme.primaryTeal.withValues(alpha: 0.35)),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -177,6 +177,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
             ),
             onSelected: (code) {
               LocaleService.setLocale(code);
+              setState(() {});
             },
             itemBuilder: (ctx) => [
               const PopupMenuItem(
@@ -224,9 +225,12 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
           const SizedBox(width: 8),
         ],
       ),
-      body: IndexedStack(
-        index: _currentIndex,
-        children: pages,
+      body: KeyedSubtree(
+        key: ValueKey(LocaleService.code),
+        child: IndexedStack(
+          index: _currentIndex,
+          children: pages,
+        ),
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,

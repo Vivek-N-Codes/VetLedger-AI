@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/surveillance_cluster.dart';
 import '../services/api_service.dart';
+import '../services/locale_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/disclaimer_banner.dart';
 import '../widgets/status_badge.dart';
@@ -34,11 +35,16 @@ class _ClusterInvestigationScreenState extends State<ClusterInvestigationScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Cluster Investigation'),
+        title: Text(
+          LocaleService.code == 'mr'
+              ? 'क्लस्टर तपासणी व पुरावे'
+              : (LocaleService.code == 'hi' ? 'क्लस्टर जांच एवं साक्ष्य' : 'Cluster Investigation'),
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
-            tooltip: 'Refresh Evidence',
+            tooltip: LocaleService.t('refresh'),
             onPressed: _loadDetail,
           ),
         ],
@@ -58,9 +64,19 @@ class _ClusterInvestigationScreenState extends State<ClusterInvestigationScreen>
                   children: [
                     const Icon(Icons.error_outline, size: 48, color: AppTheme.alertRed),
                     const SizedBox(height: 12),
-                    Text('Failed to load cluster evidence: ${snapshot.error}', textAlign: TextAlign.center),
+                    Text(
+                      LocaleService.code == 'mr'
+                          ? 'क्लस्टर पुरावे लोड करण्यात अयशस्वी: ${snapshot.error}'
+                          : (LocaleService.code == 'hi'
+                              ? 'क्लस्टर साक्ष्य लोड करने में विफल: ${snapshot.error}'
+                              : 'Failed to load cluster evidence: ${snapshot.error}'),
+                      textAlign: TextAlign.center,
+                    ),
                     const SizedBox(height: 16),
-                    ElevatedButton(onPressed: _loadDetail, child: const Text('Retry')),
+                    ElevatedButton(
+                      onPressed: _loadDetail,
+                      child: Text(LocaleService.t('retry')),
+                    ),
                   ],
                 ),
               ),
@@ -86,25 +102,34 @@ class _ClusterInvestigationScreenState extends State<ClusterInvestigationScreen>
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Village: ${detail.villageName}',
-                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppTheme.textPrimary),
-                              ),
-                              Text(
-                                'Cluster Ref: ${detail.clusterId} • ${detail.observationWindowDays}-Day Window',
-                                style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
-                              ),
-                            ],
+                          Flexible(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${LocaleService.t('village')}: ${detail.villageName}',
+                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppTheme.textPrimary),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  LocaleService.code == 'mr'
+                                      ? 'क्लस्टर संदर्भ: ${detail.clusterId} • ${detail.observationWindowDays}-दिवस विंडो'
+                                      : (LocaleService.code == 'hi'
+                                          ? 'क्लस्टर संदर्भ: ${detail.clusterId} • ${detail.observationWindowDays}-दिन विंडो'
+                                          : 'Cluster Ref: ${detail.clusterId} • ${detail.observationWindowDays}-Day Window'),
+                                  style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
                           ),
+                          const SizedBox(width: 8),
                           StatusBadge.risk(detail.riskLevel),
                         ],
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        detail.rationale,
+                        LocaleService.translateAdvisory(detail.rationale),
                         style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary, height: 1.4),
                       ),
                     ],
@@ -120,26 +145,46 @@ class _ClusterInvestigationScreenState extends State<ClusterInvestigationScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Row(
+                      Row(
                         children: [
-                          Icon(Icons.query_stats_rounded, color: AppTheme.primaryTeal, size: 20),
-                          SizedBox(width: 8),
-                          Text('Statistical Baseline Comparison', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                          const Icon(Icons.query_stats_rounded, color: AppTheme.primaryTeal, size: 20),
+                          const SizedBox(width: 8),
+                          Text(
+                            LocaleService.code == 'mr'
+                                ? 'सांख्यिकीय बेसलाइन तुलना'
+                                : (LocaleService.code == 'hi' ? 'सांख्यिकीय आधार रेखा तुलना' : 'Statistical Baseline Comparison'),
+                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 12),
                       Row(
                         children: [
                           Expanded(
-                            child: _statColumn('Current Window', '${detail.distinctAnimalCount} animals', '14-Day Observed', AppTheme.alertRed),
+                            child: _statColumn(
+                              LocaleService.code == 'mr' ? 'सध्याची विंडो' : (LocaleService.code == 'hi' ? 'वर्तमान विंडो' : 'Current Window'),
+                              '${detail.distinctAnimalCount} ${LocaleService.code == 'mr' ? 'जनावरे' : (LocaleService.code == 'hi' ? 'पशु' : 'animals')}',
+                              LocaleService.code == 'mr' ? '१४-दिवस निरीक्षण' : (LocaleService.code == 'hi' ? '14-दिन प्रेक्षण' : '14-Day Observed'),
+                              AppTheme.alertRed,
+                            ),
                           ),
                           Container(width: 1, height: 40, color: AppTheme.borderSubtle),
                           Expanded(
-                            child: _statColumn('Historical Baseline', '${detail.baselineAnimalCount} animals', 'Prior 14-Day Avg', AppTheme.textSecondary),
+                            child: _statColumn(
+                              LocaleService.code == 'mr' ? 'ऐतिहासिक बेसलाइन' : (LocaleService.code == 'hi' ? 'ऐतिहासिक बेसलाइन' : 'Historical Baseline'),
+                              '${detail.baselineAnimalCount} ${LocaleService.code == 'mr' ? 'जनावरे' : (LocaleService.code == 'hi' ? 'पशु' : 'animals')}',
+                              LocaleService.code == 'mr' ? 'मागील १४-दिवस सरासरी' : (LocaleService.code == 'hi' ? 'पूर्व 14-दिन औसत' : 'Prior 14-Day Avg'),
+                              AppTheme.textSecondary,
+                            ),
                           ),
                           Container(width: 1, height: 40, color: AppTheme.borderSubtle),
                           Expanded(
-                            child: _statColumn('Elevation Factor', '${detail.elevationFactor}x', 'Threshold: ≥2.0x', const Color(0xFF7C3AED)),
+                            child: _statColumn(
+                              LocaleService.code == 'mr' ? 'प्रमाण वाढ (Elevation)' : (LocaleService.code == 'hi' ? 'वृद्धि कारक (Elevation)' : 'Elevation Factor'),
+                              '${detail.elevationFactor}x',
+                              LocaleService.code == 'mr' ? 'मर्यादा: ≥२.०x' : (LocaleService.code == 'hi' ? 'सीमा: ≥2.0x' : 'Threshold: ≥2.0x'),
+                              const Color(0xFF7C3AED),
+                            ),
                           ),
                         ],
                       ),
@@ -151,7 +196,11 @@ class _ClusterInvestigationScreenState extends State<ClusterInvestigationScreen>
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          'Observed Window: ${detail.windowStartDate} to ${detail.windowEndDate} (${detail.supportingVisitIds.length} underlying clinical visits verified).',
+                          LocaleService.code == 'mr'
+                              ? 'निरीक्षण कालावधी: ${detail.windowStartDate} ते ${detail.windowEndDate} (${detail.supportingVisitIds.length} तपासणी नोंदी सत्यापित).'
+                              : (LocaleService.code == 'hi'
+                                  ? 'प्रेक्षण अवधि: ${detail.windowStartDate} से ${detail.windowEndDate} (${detail.supportingVisitIds.length} जांच रिकॉर्ड सत्यापित)।'
+                                  : 'Observed Window: ${detail.windowStartDate} to ${detail.windowEndDate} (${detail.supportingVisitIds.length} underlying clinical visits verified).'),
                           style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
                         ),
                       ),
@@ -168,11 +217,16 @@ class _ClusterInvestigationScreenState extends State<ClusterInvestigationScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Row(
+                      Row(
                         children: [
-                          Icon(Icons.checklist_rounded, color: AppTheme.secondaryEmerald, size: 20),
-                          SizedBox(width: 8),
-                          Text('Co-Occurring Symptom Profile', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                          const Icon(Icons.checklist_rounded, color: AppTheme.secondaryEmerald, size: 20),
+                          const SizedBox(width: 8),
+                          Text(
+                            LocaleService.code == 'mr'
+                                ? 'सह-उद्भवणारी लक्षणे (Symptom Profile)'
+                                : (LocaleService.code == 'hi' ? 'सह-लक्षण प्रोफ़ाइल (Symptom Profile)' : 'Co-Occurring Symptom Profile'),
+                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 12),
@@ -191,7 +245,7 @@ class _ClusterInvestigationScreenState extends State<ClusterInvestigationScreen>
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  e.key.replaceAll('_', ' '),
+                                  LocaleService.translateSymptom(e.key),
                                   style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppTheme.primaryTeal),
                                 ),
                                 const SizedBox(width: 6),
@@ -227,14 +281,26 @@ class _ClusterInvestigationScreenState extends State<ClusterInvestigationScreen>
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Row(
+                          Row(
                             children: [
-                              Icon(Icons.agriculture_rounded, color: AppTheme.primaryTeal, size: 20),
-                              SizedBox(width: 8),
-                              Text('Affected Farms', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                              const Icon(Icons.agriculture_rounded, color: AppTheme.primaryTeal, size: 20),
+                              const SizedBox(width: 8),
+                              Text(
+                                LocaleService.code == 'mr'
+                                    ? 'प्रभावित गोठे / फार्म्स'
+                                    : (LocaleService.code == 'hi' ? 'प्रभावित डेयरी फार्म' : 'Affected Farms'),
+                                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                              ),
                             ],
                           ),
-                          Text('${detail.affectedFarms.length} farms involved', style: const TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+                          Text(
+                            LocaleService.code == 'mr'
+                                ? '${detail.affectedFarms.length} गोठे समाविष्ट'
+                                : (LocaleService.code == 'hi'
+                                    ? '${detail.affectedFarms.length} फार्म शामिल'
+                                    : '${detail.affectedFarms.length} farms involved'),
+                            style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 10),
@@ -250,13 +316,24 @@ class _ClusterInvestigationScreenState extends State<ClusterInvestigationScreen>
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(farm.farmName, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
-                                  Text('Code: ${farm.farmCode} • Owner: ${farm.ownerName}', style: const TextStyle(fontSize: 11, color: AppTheme.textMuted)),
-                                ],
+                              Flexible(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      farm.farmName,
+                                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    Text(
+                                      '${LocaleService.code == 'mr' ? 'कोड' : (LocaleService.code == 'hi' ? 'कोड' : 'Code')}: ${farm.farmCode} • ${LocaleService.code == 'mr' ? 'मालक' : (LocaleService.code == 'hi' ? 'मालिक' : 'Owner')}: ${farm.ownerName}',
+                                      style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
                               ),
+                              const SizedBox(width: 8),
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
@@ -264,7 +341,7 @@ class _ClusterInvestigationScreenState extends State<ClusterInvestigationScreen>
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
-                                  '${farm.affectedAnimalCount} animals',
+                                  '${farm.affectedAnimalCount} ${LocaleService.code == 'mr' ? 'जनावरे' : (LocaleService.code == 'hi' ? 'पशु' : 'animals')}',
                                   style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.alertRed),
                                 ),
                               ),
@@ -288,20 +365,36 @@ class _ClusterInvestigationScreenState extends State<ClusterInvestigationScreen>
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Row(
+                          Row(
                             children: [
-                              Icon(Icons.pets_rounded, color: AppTheme.primaryTeal, size: 20),
-                              SizedBox(width: 8),
-                              Text('Distinct Affected Animals', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                              const Icon(Icons.pets_rounded, color: AppTheme.primaryTeal, size: 20),
+                              const SizedBox(width: 8),
+                              Text(
+                                LocaleService.code == 'mr'
+                                    ? 'बाधित जनावरे (केसेस)'
+                                    : (LocaleService.code == 'hi' ? 'प्रभावित पशु (केस)' : 'Distinct Affected Animals'),
+                                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                              ),
                             ],
                           ),
-                          Text('${detail.affectedAnimals.length} distinct cases', style: const TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+                          Text(
+                            LocaleService.code == 'mr'
+                                ? '${detail.affectedAnimals.length} स्वतंत्र प्रकरणे'
+                                : (LocaleService.code == 'hi'
+                                    ? '${detail.affectedAnimals.length} विशिष्ट मामले'
+                                    : '${detail.affectedAnimals.length} distinct cases'),
+                            style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 6),
-                      const Text(
-                        'Tap any animal to inspect its longitudinal profile and clinical history:',
-                        style: TextStyle(fontSize: 11, color: AppTheme.textMuted),
+                      Text(
+                        LocaleService.code == 'mr'
+                            ? 'जनावराचे प्रोफाइल व इतिहास तपासण्यासाठी टॅप करा:'
+                            : (LocaleService.code == 'hi'
+                                ? 'पशु का इतिहास और प्रोफाइल देखने के लिए टैप करें:'
+                                : 'Tap any animal to inspect its longitudinal profile and clinical history:'),
+                        style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
                       ),
                       const SizedBox(height: 10),
                       ...detail.affectedAnimals.map((animal) {
@@ -326,30 +419,35 @@ class _ClusterInvestigationScreenState extends State<ClusterInvestigationScreen>
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                      decoration: BoxDecoration(
-                                        color: AppTheme.primaryLight,
-                                        borderRadius: BorderRadius.circular(6),
+                                Flexible(
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                        decoration: BoxDecoration(
+                                          color: AppTheme.primaryLight,
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: Text(
+                                          animal.animalCode,
+                                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppTheme.primaryTeal),
+                                        ),
                                       ),
-                                      child: Text(
-                                        animal.animalCode,
-                                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppTheme.primaryTeal),
+                                      const SizedBox(width: 8),
+                                      Flexible(
+                                        child: Text(
+                                          animal.name,
+                                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      animal.name,
-                                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      '(${animal.breed ?? animal.species})',
-                                      style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
-                                    ),
-                                  ],
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        '(${animal.breed ?? LocaleService.translateSpecies(animal.species)})',
+                                        style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                                 Row(
                                   children: [
@@ -379,11 +477,18 @@ class _ClusterInvestigationScreenState extends State<ClusterInvestigationScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Row(
+                      Row(
                         children: [
-                          Icon(Icons.shield_outlined, color: AppTheme.warningAmber, size: 20),
-                          SizedBox(width: 8),
-                          Text('Recommended Field Veterinary Protocol', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                          const Icon(Icons.shield_outlined, color: AppTheme.warningAmber, size: 20),
+                          const SizedBox(width: 8),
+                          Text(
+                            LocaleService.code == 'mr'
+                                ? 'शिफारस केलेले क्षेत्रीय पशुवैद्यकीय प्रोटोकॉल'
+                                : (LocaleService.code == 'hi'
+                                    ? 'अनुशंसित फील्ड पशु चिकित्सा प्रोटोकॉल'
+                                    : 'Recommended Field Veterinary Protocol'),
+                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 12),
@@ -397,7 +502,7 @@ class _ClusterInvestigationScreenState extends State<ClusterInvestigationScreen>
                               const SizedBox(width: 6),
                               Expanded(
                                 child: Text(
-                                  action,
+                                  LocaleService.translateAdvisory(action),
                                   style: const TextStyle(fontSize: 13, color: AppTheme.textPrimary, height: 1.35),
                                 ),
                               ),

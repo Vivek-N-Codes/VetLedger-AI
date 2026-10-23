@@ -3,6 +3,7 @@ import '../models/animal.dart';
 import '../models/farm.dart';
 import '../services/api_service.dart';
 import '../services/app_data_sync.dart';
+import '../services/locale_service.dart';
 import '../theme/app_theme.dart';
 import 'animal_profile_screen.dart';
 import 'ledger_screen.dart';
@@ -79,7 +80,9 @@ class _FarmProfileScreenState extends State<FarmProfileScreen> with SingleTicker
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Add Animal to ${_farm!.name}',
+                  LocaleService.code == 'mr'
+                      ? 'नवीन जनावर जोडा (${_farm!.name})'
+                      : (LocaleService.code == 'hi' ? 'नया पशु जोड़ें (${_farm!.name})' : 'Add Animal to ${_farm!.name}'),
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
                 ),
               ),
@@ -93,25 +96,27 @@ class _FarmProfileScreenState extends State<FarmProfileScreen> with SingleTicker
                 children: [
                   TextFormField(
                     controller: nameCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Animal Name *',
-                      hintText: 'e.g., Gauri, Bella',
-                      prefixIcon: Icon(Icons.badge_rounded, color: AppTheme.primaryTeal),
+                    decoration: InputDecoration(
+                      labelText: LocaleService.code == 'mr' ? 'जनावराचे नाव *' : (LocaleService.code == 'hi' ? 'पशु का नाम *' : 'Animal Name *'),
+                      hintText: LocaleService.code == 'mr' ? 'उदा. गौरी, कपिला' : (LocaleService.code == 'hi' ? 'उदा. गौरी, कपिला' : 'e.g., Gauri, Bella'),
+                      prefixIcon: const Icon(Icons.badge_rounded, color: AppTheme.primaryTeal),
                     ),
-                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Name is required' : null,
+                    validator: (v) => (v == null || v.trim().isEmpty)
+                        ? (LocaleService.code == 'mr' ? 'नाव आवश्यक आहे' : (LocaleService.code == 'hi' ? 'नाम आवश्यक है' : 'Name is required'))
+                        : null,
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
-                    value: species,
-                    decoration: const InputDecoration(
-                      labelText: 'Species *',
-                      prefixIcon: Icon(Icons.category_rounded, color: AppTheme.primaryTeal),
+                    initialValue: species,
+                    decoration: InputDecoration(
+                      labelText: '${LocaleService.t('species')} *',
+                      prefixIcon: const Icon(Icons.category_rounded, color: AppTheme.primaryTeal),
                     ),
-                    items: const [
-                      DropdownMenuItem(value: 'CATTLE', child: Text('Cattle')),
-                      DropdownMenuItem(value: 'BUFFALO', child: Text('Buffalo')),
-                      DropdownMenuItem(value: 'GOAT', child: Text('Goat')),
-                      DropdownMenuItem(value: 'SHEEP', child: Text('Sheep')),
+                    items: [
+                      DropdownMenuItem(value: 'CATTLE', child: Text(LocaleService.translateSpecies('CATTLE'))),
+                      DropdownMenuItem(value: 'BUFFALO', child: Text(LocaleService.translateSpecies('BUFFALO'))),
+                      DropdownMenuItem(value: 'GOAT', child: Text(LocaleService.translateSpecies('GOAT'))),
+                      DropdownMenuItem(value: 'SHEEP', child: Text(LocaleService.translateSpecies('SHEEP'))),
                     ],
                     onChanged: (val) => setDialogState(() => species = val ?? 'CATTLE'),
                   ),
@@ -121,8 +126,8 @@ class _FarmProfileScreenState extends State<FarmProfileScreen> with SingleTicker
                       Expanded(
                         child: TextFormField(
                           controller: breedCtrl,
-                          decoration: const InputDecoration(
-                            labelText: 'Breed',
+                          decoration: InputDecoration(
+                            labelText: LocaleService.t('breed'),
                             hintText: 'e.g., Murrah, Gir',
                           ),
                         ),
@@ -132,13 +137,13 @@ class _FarmProfileScreenState extends State<FarmProfileScreen> with SingleTicker
                         child: TextFormField(
                           controller: ageCtrl,
                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                          decoration: const InputDecoration(
-                            labelText: 'Age (Years)',
+                          decoration: InputDecoration(
+                            labelText: LocaleService.code == 'mr' ? 'वय (वर्षे)' : (LocaleService.code == 'hi' ? 'आयु (वर्ष)' : 'Age (Years)'),
                             hintText: 'e.g., 3.5',
                           ),
                           validator: (v) {
                             if (v != null && v.isNotEmpty && double.tryParse(v) == null) {
-                              return 'Invalid number';
+                              return LocaleService.code == 'mr' ? 'अवैध संख्या' : (LocaleService.code == 'hi' ? 'अमान्य संख्या' : 'Invalid number');
                             }
                             return null;
                           },
@@ -148,33 +153,33 @@ class _FarmProfileScreenState extends State<FarmProfileScreen> with SingleTicker
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
-                    value: sex,
-                    decoration: const InputDecoration(
-                      labelText: 'Sex *',
-                      prefixIcon: Icon(Icons.male_rounded, color: AppTheme.primaryTeal),
+                    initialValue: sex,
+                    decoration: InputDecoration(
+                      labelText: '${LocaleService.code == 'mr' ? 'लिंग' : (LocaleService.code == 'hi' ? 'लिंग' : 'Sex')} *',
+                      prefixIcon: const Icon(Icons.male_rounded, color: AppTheme.primaryTeal),
                     ),
-                    items: const [
-                      DropdownMenuItem(value: 'FEMALE', child: Text('Female')),
-                      DropdownMenuItem(value: 'MALE', child: Text('Male')),
+                    items: [
+                      DropdownMenuItem(value: 'FEMALE', child: Text(LocaleService.translateSex('FEMALE'))),
+                      DropdownMenuItem(value: 'MALE', child: Text(LocaleService.translateSex('MALE'))),
                     ],
                     onChanged: (val) => setDialogState(() => sex = val ?? 'FEMALE'),
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: tagCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Ear Tag / RFID (Optional)',
+                    decoration: InputDecoration(
+                      labelText: LocaleService.code == 'mr' ? 'इअर टॅग / RFID (ऐच्छिक)' : (LocaleService.code == 'hi' ? 'ईयर टैग / आरएफआईडी (वैकल्पिक)' : 'Ear Tag / RFID (Optional)'),
                       hintText: 'e.g., IN-98214-A',
-                      prefixIcon: Icon(Icons.qr_code_rounded, color: AppTheme.primaryTeal),
+                      prefixIcon: const Icon(Icons.qr_code_rounded, color: AppTheme.primaryTeal),
                     ),
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: notesCtrl,
                     maxLines: 2,
-                    decoration: const InputDecoration(
-                      labelText: 'Physical ID & Markings',
-                      hintText: 'e.g., White star on forehead, notched left ear',
+                    decoration: InputDecoration(
+                      labelText: LocaleService.code == 'mr' ? 'शारीरिक ओळख व खुणा' : (LocaleService.code == 'hi' ? 'शारीरिक पहचान और निशान' : 'Physical ID & Markings'),
+                      hintText: LocaleService.code == 'mr' ? 'उदा. कपाळावर पांढरा टिळा, डावा कान कापलेला' : (LocaleService.code == 'hi' ? 'उदा. माथे पर सफेद तारा' : 'e.g., White star on forehead'),
                     ),
                   ),
                 ],
@@ -184,7 +189,7 @@ class _FarmProfileScreenState extends State<FarmProfileScreen> with SingleTicker
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel'),
+              child: Text(LocaleService.code == 'mr' ? 'रद्द करा' : (LocaleService.code == 'hi' ? 'रद्द करें' : 'Cancel')),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -202,22 +207,26 @@ class _FarmProfileScreenState extends State<FarmProfileScreen> with SingleTicker
                     );
                     await ApiService.registerAnimal(req);
                     if (ctx.mounted) Navigator.pop(ctx);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Animal registered to farm successfully!'),
-                        backgroundColor: AppTheme.successGreen,
-                      ),
-                    );
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(LocaleService.code == 'mr' ? 'जनावर फार्मवर यशस्वीरीत्या नोंदवले!' : (LocaleService.code == 'hi' ? 'पशु सफलतापूर्वक पंजीकृत हुआ!' : 'Animal registered to farm successfully!')),
+                          backgroundColor: AppTheme.successGreen,
+                        ),
+                      );
+                    }
                     _loadFarmDetail();
                     AppDataSync.notifyDataChanged();
                   } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(e.toString()), backgroundColor: AppTheme.alertRed),
-                    );
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(e.toString()), backgroundColor: AppTheme.alertRed),
+                      );
+                    }
                   }
                 }
               },
-              child: const Text('Register'),
+              child: Text(LocaleService.code == 'mr' ? 'नोंदणी करा' : (LocaleService.code == 'hi' ? 'पंजीकृत करें' : 'Register')),
             ),
           ],
         ),
@@ -236,7 +245,7 @@ class _FarmProfileScreenState extends State<FarmProfileScreen> with SingleTicker
 
     if (_error != null || _farm == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Farm Profile')),
+        appBar: AppBar(title: Text(LocaleService.code == 'mr' ? 'फार्म प्रोफाइल' : (LocaleService.code == 'hi' ? 'फार्म प्रोफ़ाइल' : 'Farm Profile'))),
         body: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -245,7 +254,7 @@ class _FarmProfileScreenState extends State<FarmProfileScreen> with SingleTicker
               const SizedBox(height: 12),
               Text('Error: $_error', textAlign: TextAlign.center),
               const SizedBox(height: 16),
-              ElevatedButton(onPressed: _loadFarmDetail, child: const Text('Retry')),
+              ElevatedButton(onPressed: _loadFarmDetail, child: Text(LocaleService.code == 'mr' ? 'पुन्हा प्रयत्न करा' : (LocaleService.code == 'hi' ? 'पुनः प्रयास करें' : 'Retry'))),
             ],
           ),
         ),
@@ -260,7 +269,7 @@ class _FarmProfileScreenState extends State<FarmProfileScreen> with SingleTicker
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
-            tooltip: 'Refresh',
+            tooltip: LocaleService.code == 'mr' ? 'रिफ्रेश करा' : (LocaleService.code == 'hi' ? 'ताज़ा करें' : 'Refresh'),
             onPressed: _loadFarmDetail,
           ),
         ],
@@ -269,7 +278,10 @@ class _FarmProfileScreenState extends State<FarmProfileScreen> with SingleTicker
         backgroundColor: AppTheme.primaryTeal,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add),
-        label: const Text('Add Animal', style: TextStyle(fontWeight: FontWeight.bold)),
+        label: Text(
+          LocaleService.code == 'mr' ? 'नवीन जनावर' : (LocaleService.code == 'hi' ? 'नया पशु' : 'Add Animal'),
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         onPressed: _showAddAnimalDialog,
       ),
       body: Column(
@@ -343,7 +355,7 @@ class _FarmProfileScreenState extends State<FarmProfileScreen> with SingleTicker
                                 const Icon(Icons.person_rounded, size: 16, color: AppTheme.primaryTeal),
                                 const SizedBox(width: 6),
                                 Text(
-                                  farm.ownerName ?? 'Owner Unassigned',
+                                  farm.ownerName ?? (LocaleService.code == 'mr' ? 'मालक नेमलेले नाही' : (LocaleService.code == 'hi' ? 'मालिक अनिर्धारित' : 'Owner Unassigned')),
                                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                                 ),
                               ],
@@ -351,7 +363,7 @@ class _FarmProfileScreenState extends State<FarmProfileScreen> with SingleTicker
                             if (farm.ownerPhone != null && farm.ownerPhone!.isNotEmpty) ...[
                               const SizedBox(height: 2),
                               Text(
-                                'Phone: ${farm.ownerPhone}',
+                                '${LocaleService.code == 'mr' ? 'मोबाईल:' : (LocaleService.code == 'hi' ? 'मोबाइल:' : 'Phone:')} ${farm.ownerPhone}',
                                 style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
                               ),
                             ],
@@ -360,7 +372,10 @@ class _FarmProfileScreenState extends State<FarmProfileScreen> with SingleTicker
                       ),
                       OutlinedButton.icon(
                         icon: const Icon(Icons.receipt_long_rounded, size: 16),
-                        label: const Text('Owner Ledger', style: TextStyle(fontSize: 12)),
+                        label: Text(
+                          LocaleService.code == 'mr' ? 'खातेवही' : (LocaleService.code == 'hi' ? 'बहीखाता' : 'Owner Ledger'),
+                          style: const TextStyle(fontSize: 12),
+                        ),
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                           side: const BorderSide(color: AppTheme.primaryTeal),
@@ -400,8 +415,16 @@ class _FarmProfileScreenState extends State<FarmProfileScreen> with SingleTicker
             unselectedLabelColor: AppTheme.textMuted,
             indicatorColor: AppTheme.primaryTeal,
             tabs: [
-              Tab(text: 'Registered Animals (${farm.animals.length})'),
-              Tab(text: 'Clinical History (${farm.recentVisits.length})'),
+              Tab(
+                text: LocaleService.code == 'mr'
+                    ? 'नोंदणीकृत जनावरे (${farm.animals.length})'
+                    : (LocaleService.code == 'hi' ? 'पंजीकृत पशु (${farm.animals.length})' : 'Registered Animals (${farm.animals.length})'),
+              ),
+              Tab(
+                text: LocaleService.code == 'mr'
+                    ? 'तपासणी इतिहास (${farm.recentVisits.length})'
+                    : (LocaleService.code == 'hi' ? 'नैदानिक इतिहास (${farm.recentVisits.length})' : 'Clinical History (${farm.recentVisits.length})'),
+              ),
             ],
           ),
 
@@ -418,11 +441,11 @@ class _FarmProfileScreenState extends State<FarmProfileScreen> with SingleTicker
                           children: [
                             Icon(Icons.pets_rounded, size: 48, color: Colors.grey.shade400),
                             const SizedBox(height: 12),
-                            const Text('No animals registered to this farm yet.'),
+                            Text(LocaleService.code == 'mr' ? 'या फार्मवर अद्याप कोणतीही जनावरे नोंदवलेली नाहीत.' : (LocaleService.code == 'hi' ? 'इस फार्म पर अभी कोई पशु पंजीकृत नहीं है।' : 'No animals registered to this farm yet.')),
                             const SizedBox(height: 12),
                             ElevatedButton.icon(
                               icon: const Icon(Icons.add),
-                              label: const Text('Register First Animal'),
+                              label: Text(LocaleService.code == 'mr' ? 'पहिले जनावर नोंदवा' : (LocaleService.code == 'hi' ? 'पहला पशु जोड़ें' : 'Register First Animal')),
                               onPressed: _showAddAnimalDialog,
                             ),
                           ],
@@ -445,7 +468,7 @@ class _FarmProfileScreenState extends State<FarmProfileScreen> with SingleTicker
                               ),
                               title: Text(animal.name, style: const TextStyle(fontWeight: FontWeight.bold)),
                               subtitle: Text(
-                                '${animal.species} • ${animal.breed ?? 'Native'} • ${animal.sex} • ${animal.ageYears != null ? '${animal.ageYears} yrs' : 'Age unknown'}',
+                                '${LocaleService.translateSpecies(animal.species)} • ${animal.breed ?? 'Native'} • ${LocaleService.translateSex(animal.sex)} • ${animal.ageYears != null ? '${animal.ageYears} ${LocaleService.code == 'mr' ? 'वर्षे' : (LocaleService.code == 'hi' ? 'वर्ष' : 'yrs')}' : (LocaleService.code == 'mr' ? 'वय अज्ञात' : 'Age unknown')}',
                                 style: const TextStyle(fontSize: 12),
                               ),
                               trailing: Row(
@@ -453,7 +476,7 @@ class _FarmProfileScreenState extends State<FarmProfileScreen> with SingleTicker
                                 children: [
                                   IconButton(
                                     icon: const Icon(Icons.note_add_rounded, color: AppTheme.primaryTeal, size: 20),
-                                    tooltip: 'Log Visit for ${animal.name}',
+                                    tooltip: '${LocaleService.code == 'mr' ? 'तपासणी नोंदवा' : (LocaleService.code == 'hi' ? 'दौरा दर्ज करें' : 'Log Visit')} (${animal.name})',
                                     onPressed: () async {
                                       final result = await Navigator.push(
                                         context,
@@ -489,7 +512,7 @@ class _FarmProfileScreenState extends State<FarmProfileScreen> with SingleTicker
 
                 // Recent visits
                 farm.recentVisits.isEmpty
-                    ? const Center(child: Text('No clinical visits recorded for this farm yet.'))
+                    ? Center(child: Text(LocaleService.code == 'mr' ? 'या फार्मसाठी अद्याप कोणतीही तपासणी नोंदवलेली नाही.' : (LocaleService.code == 'hi' ? 'इस फार्म के लिए अभी कोई नैदानिक दौरा दर्ज नहीं है।' : 'No clinical visits recorded for this farm yet.')))
                     : ListView.builder(
                         padding: const EdgeInsets.all(16),
                         itemCount: farm.recentVisits.length,
@@ -506,7 +529,7 @@ class _FarmProfileScreenState extends State<FarmProfileScreen> with SingleTicker
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
-                                        v.animalName ?? 'Animal #${v.animalId}',
+                                        v.animalName ?? '${LocaleService.code == 'mr' ? 'जनावर' : 'Animal'} #${v.animalId}',
                                         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                                       ),
                                       Text(
@@ -517,7 +540,7 @@ class _FarmProfileScreenState extends State<FarmProfileScreen> with SingleTicker
                                   ),
                                   const SizedBox(height: 6),
                                   Text(
-                                    v.presentingComplaint,
+                                    LocaleService.translateAdvisory(v.presentingComplaint),
                                     style: const TextStyle(fontSize: 13, color: AppTheme.textPrimary),
                                   ),
                                   if (v.symptoms.isNotEmpty) ...[
@@ -533,7 +556,7 @@ class _FarmProfileScreenState extends State<FarmProfileScreen> with SingleTicker
                                             borderRadius: BorderRadius.circular(8),
                                             border: Border.all(color: AppTheme.borderSubtle),
                                           ),
-                                          child: Text(s, style: const TextStyle(fontSize: 11)),
+                                          child: Text(LocaleService.translateSymptom(s), style: const TextStyle(fontSize: 11)),
                                         );
                                       }).toList(),
                                     ),
@@ -544,7 +567,7 @@ class _FarmProfileScreenState extends State<FarmProfileScreen> with SingleTicker
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
-                                          'Billed: ₹${v.totalCharge.toStringAsFixed(0)}',
+                                          '${LocaleService.code == 'mr' ? 'आकारणी' : (LocaleService.code == 'hi' ? 'शुल्क' : 'Billed')}: ₹${v.totalCharge.toStringAsFixed(0)}',
                                           style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primaryTeal),
                                         ),
                                         Container(
@@ -554,7 +577,7 @@ class _FarmProfileScreenState extends State<FarmProfileScreen> with SingleTicker
                                             borderRadius: BorderRadius.circular(4),
                                           ),
                                           child: Text(
-                                            v.paymentStatus,
+                                            LocaleService.translatePaymentStatus(v.paymentStatus),
                                             style: TextStyle(
                                               fontSize: 10,
                                               fontWeight: FontWeight.bold,

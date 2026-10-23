@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/animal.dart';
 import '../models/visit.dart';
 import '../services/api_service.dart';
+import '../services/locale_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/status_badge.dart';
 import 'clinical_intelligence_screen.dart';
@@ -37,11 +38,11 @@ class _AnimalProfileScreenState extends State<AnimalProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Longitudinal Profile'),
+        title: Text(LocaleService.t('animal_details')),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
-            tooltip: 'Refresh Timeline',
+            tooltip: LocaleService.t('refresh'),
             onPressed: _loadData,
           ),
         ],
@@ -61,9 +62,9 @@ class _AnimalProfileScreenState extends State<AnimalProfileScreen> {
                   children: [
                     const Icon(Icons.error_outline, size: 40, color: AppTheme.alertRed),
                     const SizedBox(height: 12),
-                    Text('Failed to load profile: ${snapshot.error}', textAlign: TextAlign.center),
+                    Text('${LocaleService.code == 'mr' ? 'माहिती लोड करण्यात अडचण' : (LocaleService.code == 'hi' ? 'प्रोफ़ाइल लोड करने में विफल' : 'Failed to load profile')}: ${snapshot.error}', textAlign: TextAlign.center),
                     const SizedBox(height: 16),
-                    ElevatedButton(onPressed: _loadData, child: const Text('Retry')),
+                    ElevatedButton(onPressed: _loadData, child: Text(LocaleService.t('retry'))),
                   ],
                 ),
               ),
@@ -116,7 +117,7 @@ class _AnimalProfileScreenState extends State<AnimalProfileScreen> {
                                 ),
                                 const SizedBox(height: 6),
                                 Text(
-                                  '${animal.species} • ${animal.breed ?? 'Native'} • ${animal.ageYears ?? 0} years • ${animal.sex}',
+                                  '${LocaleService.translateSpecies(animal.species)} • ${animal.breed ?? (LocaleService.code == 'mr' ? 'गावरान' : (LocaleService.code == 'hi' ? 'देशी' : 'Native'))} • ${animal.ageYears ?? 0} ${LocaleService.code == 'mr' ? 'वर्षे' : (LocaleService.code == 'hi' ? 'वर्ष' : 'years')} • ${LocaleService.translateSex(animal.sex)}',
                                   style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary),
                                 ),
                               ],
@@ -150,7 +151,7 @@ class _AnimalProfileScreenState extends State<AnimalProfileScreen> {
                               const Icon(Icons.person_outline, size: 16, color: AppTheme.textMuted),
                               const SizedBox(width: 6),
                               Text(
-                                'Keeper: ${animal.ownerName} (${animal.contactNumber ?? 'N/A'})',
+                                '${LocaleService.code == 'mr' ? 'मालक' : (LocaleService.code == 'hi' ? 'पालक' : 'Keeper')}: ${animal.ownerName} (${animal.contactNumber ?? 'N/A'})',
                                 style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
                               ),
                             ],
@@ -185,7 +186,12 @@ class _AnimalProfileScreenState extends State<AnimalProfileScreen> {
                           padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
                         icon: const Icon(Icons.auto_awesome_rounded, size: 18),
-                        label: const Text('AI Intelligence', style: TextStyle(fontWeight: FontWeight.bold)),
+                        label: Text(
+                          LocaleService.code == 'mr'
+                              ? 'एआय निदान व सल्ला'
+                              : (LocaleService.code == 'hi' ? 'एआई निदान एवं सलाह' : 'AI Intelligence'),
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
                         onPressed: () {
                           Navigator.push(
                             context,
@@ -204,7 +210,11 @@ class _AnimalProfileScreenState extends State<AnimalProfileScreen> {
                     Expanded(
                       child: OutlinedButton.icon(
                         icon: const Icon(Icons.add_circle_outline_rounded, size: 18),
-                        label: const Text('Record Visit'),
+                        label: Text(
+                          LocaleService.code == 'mr'
+                              ? 'तपासणी नोंदवा'
+                              : (LocaleService.code == 'hi' ? 'जांच दर्ज करें' : 'Record Visit'),
+                        ),
                         onPressed: () async {
                           final result = await Navigator.push(
                             context,
@@ -230,16 +240,20 @@ class _AnimalProfileScreenState extends State<AnimalProfileScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Longitudinal Clinical Timeline',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                    Text(
+                      LocaleService.code == 'mr'
+                          ? 'दीर्घकालीन तपासणी इतिहास'
+                          : (LocaleService.code == 'hi' ? 'दीर्घकालिक नैदानिक टाइमलाइन' : 'Longitudinal Clinical Timeline'),
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                     ),
                     FutureBuilder<List<VisitModel>>(
                       future: _visitsFuture,
                       builder: (context, snap) {
                         final count = snap.hasData ? snap.data!.length : 0;
                         return Text(
-                          '$count encounters recorded',
+                          LocaleService.code == 'mr'
+                              ? '$count तपासणी नोंदी'
+                              : (LocaleService.code == 'hi' ? '$count रिकॉर्ड दर्ज' : '$count encounters recorded'),
                           style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
                         );
                       },
@@ -395,7 +409,7 @@ class _AnimalProfileScreenState extends State<AnimalProfileScreen> {
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
-                        'Treatment: ${v.treatmentNotes!}',
+                        '${LocaleService.code == 'mr' ? 'उपचार' : (LocaleService.code == 'hi' ? 'उपचार' : 'Treatment')}: ${v.treatmentNotes!}',
                         style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary, fontWeight: FontWeight.w500),
                       ),
                     ),
@@ -413,7 +427,7 @@ class _AnimalProfileScreenState extends State<AnimalProfileScreen> {
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
-                        'Follow-up: ${v.followUpNotes!}',
+                        '${LocaleService.code == 'mr' ? 'पुढील काळजी' : (LocaleService.code == 'hi' ? 'फॉलो-अप' : 'Follow-up')}: ${v.followUpNotes!}',
                         style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
                       ),
                     ),
@@ -428,6 +442,9 @@ class _AnimalProfileScreenState extends State<AnimalProfileScreen> {
   }
 
   String _formatSymptom(String code) {
+    if (LocaleService.code != 'en') {
+      return LocaleService.translateSymptom(code);
+    }
     return code
         .replaceAll('_', ' ')
         .split(' ')

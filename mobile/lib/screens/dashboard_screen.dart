@@ -92,7 +92,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
           future: _statsFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator(color: AppTheme.primaryTeal));
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const CircularProgressIndicator(color: AppTheme.primaryTeal),
+                      const SizedBox(height: 16),
+                      Text(
+                        LocaleService.t('loading'),
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        LocaleService.t('waking_server'),
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                      ),
+                    ],
+                  ),
+                ),
+              );
             }
             if (snapshot.hasError) {
               return Center(
@@ -103,20 +124,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     children: [
                       const Icon(Icons.cloud_off_rounded, size: 48, color: AppTheme.alertRed),
                       const SizedBox(height: 16),
-                      const Text(
-                        'Unable to connect to VetLedger backend',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      Text(
+                        LocaleService.code == 'mr'
+                            ? 'सर्व्हरशी संपर्क होऊ शकला नाही'
+                            : (LocaleService.code == 'hi'
+                                ? 'सर्वर से कनेक्ट नहीं हो सका'
+                                : 'Unable to connect to VetLedger backend'),
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Target URL: ${ApiService.baseUrl}\n${snapshot.error}',
+                        LocaleService.code == 'mr'
+                            ? 'क्लाउड सर्व्हर (Render) सुरू होत असू शकतो. कृपया २० सेकंद थांबा आणि पुन्हा प्रयत्न करा.'
+                            : (LocaleService.code == 'hi'
+                                ? 'क्लाउड सर्वर (Render) शुरू हो रहा हो सकता है। कृपया कुछ सेकंड प्रतीक्षा करें।'
+                                : 'Cloud server (Render) may be waking up. Please wait a few seconds and retry.'),
                         textAlign: TextAlign.center,
                         style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton.icon(
                         icon: const Icon(Icons.refresh),
-                        label: const Text('Retry Connection'),
+                        label: Text(LocaleService.t('retry')),
                         onPressed: _loadStats,
                       ),
                     ],
@@ -171,13 +200,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 child: const Icon(Icons.campaign_rounded, color: AppTheme.alertRed, size: 22),
                               ),
                               const SizedBox(width: 12),
-                              const Expanded(
+                              Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'SURVEILLANCE SIGNAL DETECTED',
-                                      style: TextStyle(
+                                      LocaleService.code == 'mr'
+                                          ? 'रोग पाळत इशारा (SURVEILLANCE ALERT)'
+                                          : (LocaleService.code == 'hi'
+                                              ? 'रोग निगरानी अलर्ट (SURVEILLANCE ALERT)'
+                                              : 'SURVEILLANCE SIGNAL DETECTED'),
+                                      style: const TextStyle(
                                         fontSize: 11,
                                         fontWeight: FontWeight.w800,
                                         color: AppTheme.alertRed,
@@ -185,8 +218,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       ),
                                     ),
                                     Text(
-                                      'Sangamner: Unusual Symptom Spike',
-                                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
+                                      LocaleService.code == 'mr'
+                                          ? 'संगमनेर: लक्षणांमध्ये संशयास्पद वाढ'
+                                          : (LocaleService.code == 'hi'
+                                              ? 'संगमनेर: लक्षणों में असामान्य वृद्धि'
+                                              : 'Sangamner: Unusual Symptom Spike'),
+                                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
                                     ),
                                   ],
                                 ),
@@ -195,9 +232,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             ],
                           ),
                           const SizedBox(height: 12),
-                          const Text(
-                            '17 distinct animals across 6 farms presented with Fever, Nasal Discharge, and Reduced Appetite in the last 14 days (9.4x historical baseline).',
-                            style: TextStyle(fontSize: 13, color: AppTheme.textSecondary, height: 1.35),
+                          Text(
+                            LocaleService.code == 'mr'
+                                ? 'मागील १४ दिवसांत ६ गोठ्यांमधील १७ जनावरांमध्ये ताप, नाकातून स्राव आणि चारा न खाणे ही लक्षणे आढळली (मूळ प्रमाणापेक्षा ९.४ पट वाढ).'
+                                : (LocaleService.code == 'hi'
+                                    ? 'पिछले 14 दिनों में 6 फार्मों के 17 पशुओं में बुखार, नाक से स्राव और भूख में कमी के लक्षण पाए गए (9.4x वृद्धि)।'
+                                    : '17 distinct animals across 6 farms presented with Fever, Nasal Discharge, and Reduced Appetite in the last 14 days (9.4x historical baseline).'),
+                            style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary, height: 1.35),
                           ),
                           const SizedBox(height: 14),
                           SizedBox(
@@ -209,7 +250,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 padding: const EdgeInsets.symmetric(vertical: 12),
                               ),
                               icon: const Icon(Icons.search_rounded, size: 18),
-                              label: const Text('Investigate Sangamner Cluster Evidence'),
+                              label: Text(
+                                LocaleService.code == 'mr'
+                                    ? 'संगमनेर संसर्ग क्लस्टर पुरावे तपासा'
+                                    : (LocaleService.code == 'hi'
+                                        ? 'संगमनेर क्लस्टर साक्ष्य की जांच करें'
+                                        : 'Investigate Sangamner Cluster Evidence'),
+                              ),
                               onPressed: () {
                                 Navigator.push(
                                   context,
@@ -232,13 +279,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Live Farm Livestock Distribution',
-                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                      Text(
+                        LocaleService.code == 'mr'
+                            ? 'गोठे व पशुधन संख्या आढावा'
+                            : (LocaleService.code == 'hi'
+                                ? 'फार्म एवं पशुधन संख्या विवरण'
+                                : 'Live Farm Livestock Distribution'),
+                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                       ),
                       TextButton.icon(
                         icon: const Icon(Icons.arrow_forward_rounded, size: 16),
-                        label: const Text('All Farms'),
+                        label: Text(
+                          LocaleService.code == 'mr'
+                              ? 'सर्व गोठे'
+                              : (LocaleService.code == 'hi' ? 'सभी फार्म' : 'All Farms'),
+                        ),
                         onPressed: () {
                           if (widget.onNavigateTab != null) {
                             widget.onNavigateTab!(2);
@@ -267,7 +322,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  'Dynamic Herd Counts per Farm (${stats.farmStats.length} Total Farms)',
+                                  LocaleService.code == 'mr'
+                                      ? 'गोठानिहाय जनावरांची संख्या (एकूण ${stats.farmStats.length} गोठे)'
+                                      : (LocaleService.code == 'hi'
+                                          ? 'फार्म अनुसार पशु गणना (कुल ${stats.farmStats.length} फार्म)'
+                                          : 'Dynamic Herd Counts per Farm (${stats.farmStats.length} Total Farms)'),
                                   style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textSecondary),
                                 ),
                               ),
@@ -310,7 +369,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                         const Icon(Icons.pets_rounded, size: 12, color: AppTheme.primaryTeal),
                                         const SizedBox(width: 4),
                                         Text(
-                                          '${f.animalCount} animals',
+                                          LocaleService.code == 'mr'
+                                              ? '${f.animalCount} जनावरे'
+                                              : (LocaleService.code == 'hi'
+                                                  ? '${f.animalCount} पशु'
+                                                  : '${f.animalCount} animals'),
                                           style: const TextStyle(
                                             color: AppTheme.primaryTeal,
                                             fontWeight: FontWeight.bold,
@@ -337,9 +400,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     children: [
                       const Icon(Icons.location_city_rounded, color: AppTheme.primaryTeal, size: 18),
                       const SizedBox(width: 8),
-                      const Text(
-                        'Village Animal Breakdown',
-                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                      Text(
+                        LocaleService.code == 'mr'
+                            ? 'गावनिहाय जनावरांचा आढावा'
+                            : (LocaleService.code == 'hi'
+                                ? 'ग्रामवार पशु विवरण'
+                                : 'Village Animal Breakdown'),
+                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                       ),
                     ],
                   ),
@@ -361,7 +428,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             children: [
                               Text(vs.villageName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                               const SizedBox(height: 2),
-                              Text('${vs.animalCount} animals • ${vs.farmCount} farms', style: const TextStyle(fontSize: 11, color: AppTheme.textMuted)),
+                              Text(
+                                LocaleService.code == 'mr'
+                                    ? '${vs.animalCount} जनावरे • ${vs.farmCount} गोठे'
+                                    : (LocaleService.code == 'hi'
+                                        ? '${vs.animalCount} पशु • ${vs.farmCount} फार्म'
+                                        : '${vs.animalCount} animals • ${vs.farmCount} farms'),
+                                style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
+                              ),
                             ],
                           ),
                         );
@@ -372,14 +446,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ],
 
                 // Quick Navigation Action Row
-                const Text('Clinical Workflows', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                Text(
+                  LocaleService.code == 'mr'
+                      ? 'क्लिनिकल कार्यप्रणाली'
+                      : (LocaleService.code == 'hi' ? 'क्लिनिकल कार्यप्रवाह' : 'Clinical Workflows'),
+                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                ),
                 const SizedBox(height: 10),
                 Row(
                   children: [
                     Expanded(
                       child: _buildWorkflowAction(
-                        title: 'Animal Records',
-                        subtitle: 'Search & Profiles',
+                        title: LocaleService.t('animals'),
+                        subtitle: LocaleService.code == 'mr'
+                            ? 'शोध व प्रोफाइल'
+                            : (LocaleService.code == 'hi' ? 'खोज एवं प्रोफाइल' : 'Search & Profiles'),
                         icon: Icons.badge_outlined,
                         color: AppTheme.primaryTeal,
                         onTap: () {
@@ -394,8 +475,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     const SizedBox(width: 10),
                     Expanded(
                       child: _buildWorkflowAction(
-                        title: 'Record Visit',
-                        subtitle: 'New Clinical Exam',
+                        title: LocaleService.code == 'mr'
+                            ? 'तपासणी नोंदवा'
+                            : (LocaleService.code == 'hi' ? 'जांच दर्ज करें' : 'Record Visit'),
+                        subtitle: LocaleService.code == 'mr'
+                            ? 'नवीन तपासणी'
+                            : (LocaleService.code == 'hi' ? 'नई जांच' : 'New Clinical Exam'),
                         icon: Icons.edit_calendar_rounded,
                         color: AppTheme.secondaryEmerald,
                         onTap: () async {
@@ -412,13 +497,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     const SizedBox(width: 10),
                     Expanded(
                       child: _buildWorkflowAction(
-                        title: 'Surveillance',
-                        subtitle: 'Cluster Analytics',
+                        title: LocaleService.t('surveillance'),
+                        subtitle: LocaleService.code == 'mr'
+                            ? 'संसर्ग विश्लेषण'
+                            : (LocaleService.code == 'hi' ? 'क्लस्टर विश्लेषण' : 'Cluster Analytics'),
                         icon: Icons.analytics_outlined,
                         color: const Color(0xFFD97706),
                         onTap: () {
                           if (widget.onNavigateTab != null) {
-                            widget.onNavigateTab!(2);
+                            widget.onNavigateTab!(3);
                           } else {
                             Navigator.push(context, MaterialPageRoute(builder: (_) => const SurveillanceDashboardScreen()));
                           }
@@ -433,10 +520,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Recent Clinical Visits', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                    Text(LocaleService.t('recent_clinical_visits'), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
                     TextButton.icon(
                       icon: const Icon(Icons.arrow_forward_rounded, size: 16),
-                      label: const Text('View All Animals'),
+                      label: Text(
+                        LocaleService.code == 'mr'
+                            ? 'सर्व जनावरे पहा'
+                            : (LocaleService.code == 'hi' ? 'सभी पशु देखें' : 'View All Animals'),
+                      ),
                       onPressed: () {
                         if (widget.onNavigateTab != null) {
                           widget.onNavigateTab!(1);

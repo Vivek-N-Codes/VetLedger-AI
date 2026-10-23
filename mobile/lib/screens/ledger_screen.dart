@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/owner_ledger.dart';
 import '../services/api_service.dart';
 import '../services/app_data_sync.dart';
+import '../services/locale_service.dart';
 import '../theme/app_theme.dart';
 
 class LedgerScreen extends StatefulWidget {
@@ -121,7 +122,9 @@ class _LedgerScreenState extends State<LedgerScreen> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Record Payment for ${owner.name}',
+                  LocaleService.code == 'mr'
+                      ? 'पैसे जमा नोंदवा (${owner.name})'
+                      : (LocaleService.code == 'hi' ? 'भुगतान दर्ज करें (${owner.name})' : 'Record Payment for ${owner.name}'),
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
                 ),
               ),
@@ -144,7 +147,10 @@ class _LedgerScreenState extends State<LedgerScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Current Outstanding:', style: TextStyle(fontSize: 13)),
+                        Text(
+                          LocaleService.code == 'mr' ? 'सध्याची थकबाकी:' : (LocaleService.code == 'hi' ? 'वर्तमान बकाया:' : 'Current Outstanding:'),
+                          style: const TextStyle(fontSize: 13),
+                        ),
                         Text(
                           '₹${owner.outstandingBalance.toStringAsFixed(2)}',
                           style: TextStyle(
@@ -160,50 +166,54 @@ class _LedgerScreenState extends State<LedgerScreen> {
                   TextFormField(
                     controller: amountCtrl,
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(
-                      labelText: 'Payment Amount (₹) *',
+                    decoration: InputDecoration(
+                      labelText: LocaleService.code == 'mr' ? 'जमा रक्कम (₹) *' : (LocaleService.code == 'hi' ? 'भुगतान राशि (₹) *' : 'Payment Amount (₹) *'),
                       prefixText: '₹ ',
-                      prefixIcon: Icon(Icons.currency_rupee_rounded, color: AppTheme.primaryTeal),
+                      prefixIcon: const Icon(Icons.currency_rupee_rounded, color: AppTheme.primaryTeal),
                     ),
                     validator: (v) {
-                      if (v == null || v.trim().isEmpty) return 'Enter payment amount';
+                      if (v == null || v.trim().isEmpty) {
+                        return LocaleService.code == 'mr' ? 'कृपया रक्कम टाका' : (LocaleService.code == 'hi' ? 'कृपया राशि दर्ज करें' : 'Enter payment amount');
+                      }
                       final val = double.tryParse(v.trim());
-                      if (val == null || val <= 0) return 'Enter a valid amount';
+                      if (val == null || val <= 0) {
+                        return LocaleService.code == 'mr' ? 'योग्य रक्कम टाका' : (LocaleService.code == 'hi' ? 'वैध राशि दर्ज करें' : 'Enter a valid amount');
+                      }
                       return null;
                     },
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
-                    value: method,
-                    decoration: const InputDecoration(
-                      labelText: 'Payment Method *',
-                      prefixIcon: Icon(Icons.account_balance_wallet_rounded, color: AppTheme.primaryTeal),
+                    initialValue: method,
+                    decoration: InputDecoration(
+                      labelText: LocaleService.code == 'mr' ? 'पेमेंट पद्धत *' : (LocaleService.code == 'hi' ? 'भुगतान विधि *' : 'Payment Method *'),
+                      prefixIcon: const Icon(Icons.account_balance_wallet_rounded, color: AppTheme.primaryTeal),
                     ),
-                    items: const [
-                      DropdownMenuItem(value: 'CASH', child: Text('Cash')),
-                      DropdownMenuItem(value: 'UPI', child: Text('UPI / QR Code')),
-                      DropdownMenuItem(value: 'BANK_TRANSFER', child: Text('Direct Bank Transfer (NEFT/IMPS)')),
-                      DropdownMenuItem(value: 'CHEQUE', child: Text('Cheque')),
+                    items: [
+                      DropdownMenuItem(value: 'CASH', child: Text(LocaleService.translatePaymentMethod('CASH'))),
+                      DropdownMenuItem(value: 'UPI', child: Text(LocaleService.translatePaymentMethod('UPI'))),
+                      DropdownMenuItem(value: 'BANK_TRANSFER', child: Text(LocaleService.translatePaymentMethod('BANK_TRANSFER'))),
+                      DropdownMenuItem(value: 'CHEQUE', child: Text(LocaleService.translatePaymentMethod('CHEQUE'))),
                     ],
                     onChanged: (val) => setDialogState(() => method = val ?? 'CASH'),
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: refCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Transaction / Ref No. (Optional)',
+                    decoration: InputDecoration(
+                      labelText: LocaleService.code == 'mr' ? 'व्यवहार / संदर्भ क्र. (ऐच्छिक)' : (LocaleService.code == 'hi' ? 'लेन-देन / संदर्भ संख्या (वैकल्पिक)' : 'Transaction / Ref No. (Optional)'),
                       hintText: 'e.g., UPI Ref 9832148192',
-                      prefixIcon: Icon(Icons.tag_rounded, color: AppTheme.primaryTeal),
+                      prefixIcon: const Icon(Icons.tag_rounded, color: AppTheme.primaryTeal),
                     ),
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: notesCtrl,
                     maxLines: 2,
-                    decoration: const InputDecoration(
-                      labelText: 'Notes / Remarks',
-                      hintText: 'e.g., Paid via GooglePay at doorstep',
-                      prefixIcon: Icon(Icons.notes_rounded, color: AppTheme.primaryTeal),
+                    decoration: InputDecoration(
+                      labelText: LocaleService.code == 'mr' ? 'शेरा / नोंदी' : (LocaleService.code == 'hi' ? 'टिप्पणी / नोट्स' : 'Notes / Remarks'),
+                      hintText: LocaleService.code == 'mr' ? 'उदा. रोख रक्कम थेट स्वीकारली' : (LocaleService.code == 'hi' ? 'उदा. नकद भुगतान प्राप्त हुआ' : 'e.g., Paid via GooglePay at doorstep'),
+                      prefixIcon: const Icon(Icons.notes_rounded, color: AppTheme.primaryTeal),
                     ),
                   ),
                 ],
@@ -213,7 +223,7 @@ class _LedgerScreenState extends State<LedgerScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel'),
+              child: Text(LocaleService.code == 'mr' ? 'रद्द करा' : (LocaleService.code == 'hi' ? 'रद्द करें' : 'Cancel')),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -233,13 +243,15 @@ class _LedgerScreenState extends State<LedgerScreen> {
                     _loadOwnerDetail(owner.ownerId);
                     AppDataSync.notifyDataChanged();
                   } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(e.toString()), backgroundColor: AppTheme.alertRed),
-                    );
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(e.toString()), backgroundColor: AppTheme.alertRed),
+                      );
+                    }
                   }
                 }
               },
-              child: const Text('Confirm Payment'),
+              child: Text(LocaleService.code == 'mr' ? 'पेमेंट निश्चित करा' : (LocaleService.code == 'hi' ? 'भुगतान पुष्टि करें' : 'Confirm Payment')),
             ),
           ],
         ),
@@ -252,11 +264,14 @@ class _LedgerScreenState extends State<LedgerScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.receipt_long_rounded, color: AppTheme.successGreen),
-            SizedBox(width: 8),
-            Text('Official Payment Receipt', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
+            const Icon(Icons.receipt_long_rounded, color: AppTheme.successGreen),
+            const SizedBox(width: 8),
+            Text(
+              LocaleService.code == 'mr' ? 'अधिकृत पेमेंट पावती' : (LocaleService.code == 'hi' ? 'आधिकारिक भुगतान रसीद' : 'Official Payment Receipt'),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+            ),
           ],
         ),
         content: SingleChildScrollView(
@@ -280,23 +295,23 @@ class _LedgerScreenState extends State<LedgerScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Receipt #: ${receipt.receiptNumber}',
+                        '${LocaleService.code == 'mr' ? 'पावती क्र.' : (LocaleService.code == 'hi' ? 'रसीद संख्या' : 'Receipt #')}: ${receipt.receiptNumber}',
                         style: const TextStyle(fontWeight: FontWeight.w600, color: AppTheme.primaryTeal),
                       ),
-                      Text('Date: ${receipt.paymentDate}', style: const TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+                      Text('${LocaleService.code == 'mr' ? 'तारीख' : (LocaleService.code == 'hi' ? 'दिनांक' : 'Date')}: ${receipt.paymentDate}', style: const TextStyle(fontSize: 12, color: AppTheme.textMuted)),
                     ],
                   ),
                 ),
                 const Divider(height: 24),
-                Text('Payer: ${receipt.ownerName}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                Text('Phone: ${receipt.ownerPhone}', style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                Text('${LocaleService.code == 'mr' ? 'शेतकरी' : (LocaleService.code == 'hi' ? 'किसान' : 'Payer')}: ${receipt.ownerName}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                Text('${LocaleService.code == 'mr' ? 'मोबाईल' : (LocaleService.code == 'hi' ? 'मोबाइल' : 'Phone')}: ${receipt.ownerPhone}', style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
                 if (receipt.ownerAddress != null)
-                  Text('Address: ${receipt.ownerAddress}', style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                  Text('${LocaleService.code == 'mr' ? 'पत्ता' : (LocaleService.code == 'hi' ? 'पता' : 'Address')}: ${receipt.ownerAddress}', style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
                 const SizedBox(height: 12),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Amount Paid:', style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text(LocaleService.code == 'mr' ? 'भरलेली रक्कम:' : (LocaleService.code == 'hi' ? 'जमा राशि:' : 'Amount Paid:'), style: const TextStyle(fontWeight: FontWeight.bold)),
                     Text(
                       '₹${receipt.amount.toStringAsFixed(2)}',
                       style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.successGreen),
@@ -306,15 +321,15 @@ class _LedgerScreenState extends State<LedgerScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Method:', style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
-                    Text(receipt.paymentMethod, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                    Text(LocaleService.code == 'mr' ? 'पद्धत:' : (LocaleService.code == 'hi' ? 'विधि:' : 'Method:'), style: const TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+                    Text(LocaleService.translatePaymentMethod(receipt.paymentMethod), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
                   ],
                 ),
                 if (receipt.referenceNumber != null)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Ref #:', style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+                      Text(LocaleService.code == 'mr' ? 'संदर्भ क्र.:' : (LocaleService.code == 'hi' ? 'संदर्भ सं.:' : 'Ref #:'), style: const TextStyle(fontSize: 12, color: AppTheme.textMuted)),
                       Text(receipt.referenceNumber!, style: const TextStyle(fontSize: 12)),
                     ],
                   ),
@@ -322,14 +337,14 @@ class _LedgerScreenState extends State<LedgerScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Previous Balance:', style: TextStyle(fontSize: 12)),
+                    Text(LocaleService.code == 'mr' ? 'मागील बाकी:' : (LocaleService.code == 'hi' ? 'पिछला बकाया:' : 'Previous Balance:'), style: const TextStyle(fontSize: 12)),
                     Text('₹${receipt.previousBalance.toStringAsFixed(2)}', style: const TextStyle(fontSize: 12)),
                   ],
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('New Balance:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                    Text(LocaleService.code == 'mr' ? 'नवीन बाकी:' : (LocaleService.code == 'hi' ? 'नया बकाया:' : 'New Balance:'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                     Text(
                       '₹${receipt.newBalance.toStringAsFixed(2)}',
                       style: TextStyle(
@@ -342,7 +357,10 @@ class _LedgerScreenState extends State<LedgerScreen> {
                 ),
                 if (receipt.allocations.isNotEmpty) ...[
                   const SizedBox(height: 12),
-                  const Text('Automatic FIFO Allocations:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.textMuted)),
+                  Text(
+                    LocaleService.code == 'mr' ? 'स्वयंचलित बिल वाटप (FIFO):' : (LocaleService.code == 'hi' ? 'स्वचालित बिल आवंटन (FIFO):' : 'Automatic FIFO Allocations:'),
+                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.textMuted),
+                  ),
                   const SizedBox(height: 4),
                   ...receipt.allocations.map((a) => Padding(
                         padding: const EdgeInsets.symmetric(vertical: 2),
@@ -351,7 +369,7 @@ class _LedgerScreenState extends State<LedgerScreen> {
                           children: [
                             Expanded(
                               child: Text(
-                                'Visit #${a.visitId} (${a.animalName ?? 'Animal'})',
+                                '${LocaleService.code == 'mr' ? 'तपासणी' : (LocaleService.code == 'hi' ? 'दौरा' : 'Visit')} #${a.visitId} (${a.animalName ?? (LocaleService.code == 'mr' ? 'जनावर' : 'Animal')})',
                                 style: const TextStyle(fontSize: 11),
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -369,7 +387,7 @@ class _LedgerScreenState extends State<LedgerScreen> {
         actions: [
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Close Receipt'),
+            child: Text(LocaleService.code == 'mr' ? 'पावती बंद करा' : (LocaleService.code == 'hi' ? 'रसीद बंद करें' : 'Close Receipt')),
           ),
         ],
       ),
@@ -380,11 +398,11 @@ class _LedgerScreenState extends State<LedgerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Financial Ledger', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(LocaleService.t('financial_ledger'), style: const TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
-            tooltip: 'Refresh',
+            tooltip: LocaleService.code == 'mr' ? 'रिफ्रेश करा' : (LocaleService.code == 'hi' ? 'ताज़ा करें' : 'Refresh'),
             onPressed: () {
               _loadOwners();
               if (_selectedOwnerDetail != null) {
@@ -412,7 +430,7 @@ class _LedgerScreenState extends State<LedgerScreen> {
           child: TextField(
             controller: _searchController,
             decoration: InputDecoration(
-              hintText: 'Search owner by name, phone, or village...',
+              hintText: LocaleService.code == 'mr' ? 'शेतकऱ्याचे नाव, फोन किंवा गाव शोधा...' : (LocaleService.code == 'hi' ? 'किसान का नाम, फोन या गांव खोजें...' : 'Search owner by name, phone, or village...'),
               prefixIcon: const Icon(Icons.search_rounded, color: AppTheme.primaryTeal),
               suffixIcon: _searchQuery.isNotEmpty
                   ? IconButton(
@@ -435,7 +453,7 @@ class _LedgerScreenState extends State<LedgerScreen> {
               : _error != null
                   ? Center(child: Text('Error: $_error'))
                   : _owners.isEmpty
-                      ? const Center(child: Text('No owner ledgers found'))
+                      ? Center(child: Text(LocaleService.code == 'mr' ? 'कोणतीही खातेवही सापडली नाही' : (LocaleService.code == 'hi' ? 'कोई बहीखाता नहीं मिला' : 'No owner ledgers found')))
                       : RefreshIndicator(
                           onRefresh: _loadOwners,
                           color: AppTheme.primaryTeal,
@@ -480,13 +498,15 @@ class _LedgerScreenState extends State<LedgerScreen> {
                                           children: [
                                             Expanded(
                                               child: Text(
-                                                '${owner.phone} • ${owner.villageName ?? 'General'}',
+                                                '${owner.phone} • ${owner.villageName ?? (LocaleService.code == 'mr' ? 'सर्वसाधारण' : 'General')}',
                                                 style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
                                                 overflow: TextOverflow.ellipsis,
                                               ),
                                             ),
                                             Text(
-                                              owner.outstandingBalance > 0 ? 'Due Balance' : 'Fully Settled',
+                                              owner.outstandingBalance > 0
+                                                  ? (LocaleService.code == 'mr' ? 'बाकी शिल्लक' : (LocaleService.code == 'hi' ? 'बकाया राशि' : 'Due Balance'))
+                                                  : (LocaleService.code == 'mr' ? 'पूर्ण जमा' : (LocaleService.code == 'hi' ? 'पूर्ण चुकता' : 'Fully Settled')),
                                               style: TextStyle(
                                                 fontSize: 11,
                                                 fontWeight: FontWeight.w600,
@@ -501,15 +521,15 @@ class _LedgerScreenState extends State<LedgerScreen> {
                                           runSpacing: 4,
                                           children: [
                                             Text(
-                                              'Billed: ₹${owner.totalBilled.toStringAsFixed(0)}',
+                                              '${LocaleService.code == 'mr' ? 'एकूण आकारणी' : (LocaleService.code == 'hi' ? 'कुल देय' : 'Billed')}: ₹${owner.totalBilled.toStringAsFixed(0)}',
                                               style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
                                             ),
                                             Text(
-                                              'Paid: ₹${owner.totalPaid.toStringAsFixed(0)}',
+                                              '${LocaleService.code == 'mr' ? 'एकूण जमा' : (LocaleService.code == 'hi' ? 'कुल भुगतान' : 'Paid')}: ₹${owner.totalPaid.toStringAsFixed(0)}',
                                               style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
                                             ),
                                             Text(
-                                              '${owner.totalAnimals} head across ${owner.totalFarms} farm(s)',
+                                              '${owner.totalAnimals} ${LocaleService.code == 'mr' ? 'जनावरे' : (LocaleService.code == 'hi' ? 'पशु' : 'head')} • ${owner.totalFarms} ${LocaleService.code == 'mr' ? 'फार्म' : (LocaleService.code == 'hi' ? 'फार्म' : 'farm(s)')}',
                                               style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
                                             ),
                                           ],
@@ -539,7 +559,7 @@ class _LedgerScreenState extends State<LedgerScreen> {
               IconButton(
                 icon: const Icon(Icons.arrow_back_rounded),
                 onPressed: () => setState(() => _selectedOwnerDetail = null),
-                tooltip: 'Back to Owners',
+                tooltip: LocaleService.code == 'mr' ? 'शेतकरी यादीकडे मागे' : (LocaleService.code == 'hi' ? 'किसान सूची पर वापस' : 'Back to Owners'),
               ),
               Expanded(
                 child: Column(
@@ -552,7 +572,10 @@ class _LedgerScreenState extends State<LedgerScreen> {
               ),
               ElevatedButton.icon(
                 icon: const Icon(Icons.payment_rounded, size: 16),
-                label: const Text('Record Payment', style: TextStyle(fontSize: 13)),
+                label: Text(
+                  LocaleService.code == 'mr' ? 'पैसे नोंदवा' : (LocaleService.code == 'hi' ? 'भुगतान दर्ज करें' : 'Record Payment'),
+                  style: const TextStyle(fontSize: 13),
+                ),
                 onPressed: _showRecordPaymentDialog,
               ),
             ],
@@ -580,7 +603,10 @@ class _LedgerScreenState extends State<LedgerScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Total Billed', style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+                            Text(
+                              LocaleService.code == 'mr' ? 'एकूण आकारणी' : (LocaleService.code == 'hi' ? 'कुल देय' : 'Total Billed'),
+                              style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                            ),
                             const SizedBox(height: 4),
                             Text(
                               '₹${owner.totalBilled.toStringAsFixed(0)}',
@@ -602,7 +628,10 @@ class _LedgerScreenState extends State<LedgerScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Total Paid', style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+                            Text(
+                              LocaleService.code == 'mr' ? 'एकूण जमा' : (LocaleService.code == 'hi' ? 'कुल भुगतान' : 'Total Paid'),
+                              style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                            ),
                             const SizedBox(height: 4),
                             Text(
                               '₹${owner.totalPaid.toStringAsFixed(0)}',
@@ -626,7 +655,10 @@ class _LedgerScreenState extends State<LedgerScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Outstanding', style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+                            Text(
+                              LocaleService.code == 'mr' ? 'शिल्लक बाकी' : (LocaleService.code == 'hi' ? 'बकाया' : 'Outstanding'),
+                              style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                            ),
                             const SizedBox(height: 4),
                             Text(
                               '₹${owner.outstandingBalance.toStringAsFixed(0)}',
@@ -649,14 +681,14 @@ class _LedgerScreenState extends State<LedgerScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Clinical Encounters & Charges (${owner.visits.length})',
+                      '${LocaleService.code == 'mr' ? 'क्लिनिकल तपासण्या व आकारणी' : (LocaleService.code == 'hi' ? 'नैदानिक दौरे व शुल्क' : 'Clinical Encounters & Charges')} (${owner.visits.length})',
                       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
                   ],
                 ),
                 const SizedBox(height: 10),
                 if (owner.visits.isEmpty)
-                  const Text('No billed clinical visits recorded.')
+                  Text(LocaleService.code == 'mr' ? 'कोणत्याही क्लिनिकल तपासणीचे बिल नोंदवलेले नाही.' : (LocaleService.code == 'hi' ? 'कोई बिल किया गया नैदानिक दौरा दर्ज नहीं है।' : 'No billed clinical visits recorded.'))
                 else
                   ...owner.visits.map((v) => Card(
                         margin: const EdgeInsets.only(bottom: 10),
@@ -680,7 +712,7 @@ class _LedgerScreenState extends State<LedgerScreen> {
                                 ],
                               ),
                               const SizedBox(height: 4),
-                              Text(v.presentingComplaint, style: const TextStyle(fontSize: 13)),
+                              Text(LocaleService.translateAdvisory(v.presentingComplaint), style: const TextStyle(fontSize: 13)),
                               const SizedBox(height: 8),
                               // Fee breakdown row
                               Container(
@@ -694,11 +726,11 @@ class _LedgerScreenState extends State<LedgerScreen> {
                                   runSpacing: 6,
                                   crossAxisAlignment: WrapCrossAlignment.center,
                                   children: [
-                                    Text('Consult: ₹${v.consultationFee.toStringAsFixed(0)}', style: const TextStyle(fontSize: 11)),
-                                    Text('Services: ₹${v.serviceFee.toStringAsFixed(0)}', style: const TextStyle(fontSize: 11)),
-                                    Text('Meds: ₹${v.medicineFee.toStringAsFixed(0)}', style: const TextStyle(fontSize: 11)),
+                                    Text('${LocaleService.code == 'mr' ? 'तपासणी' : (LocaleService.code == 'hi' ? 'परामर्श' : 'Consult')}: ₹${v.consultationFee.toStringAsFixed(0)}', style: const TextStyle(fontSize: 11)),
+                                    Text('${LocaleService.code == 'mr' ? 'सेवा' : (LocaleService.code == 'hi' ? 'सेवाएं' : 'Services')}: ₹${v.serviceFee.toStringAsFixed(0)}', style: const TextStyle(fontSize: 11)),
+                                    Text('${LocaleService.code == 'mr' ? 'औषधे' : (LocaleService.code == 'hi' ? 'दवाएं' : 'Meds')}: ₹${v.medicineFee.toStringAsFixed(0)}', style: const TextStyle(fontSize: 11)),
                                     Text(
-                                      'Total: ₹${v.totalCharge.toStringAsFixed(0)}',
+                                      '${LocaleService.code == 'mr' ? 'एकूण' : (LocaleService.code == 'hi' ? 'कुल' : 'Total')}: ₹${v.totalCharge.toStringAsFixed(0)}',
                                       style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primaryTeal),
                                     ),
                                     Container(
@@ -708,7 +740,7 @@ class _LedgerScreenState extends State<LedgerScreen> {
                                         borderRadius: BorderRadius.circular(4),
                                       ),
                                       child: Text(
-                                        v.paymentStatus,
+                                        LocaleService.translatePaymentStatus(v.paymentStatus),
                                         style: TextStyle(
                                           fontSize: 10,
                                           fontWeight: FontWeight.bold,
@@ -730,14 +762,14 @@ class _LedgerScreenState extends State<LedgerScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Payment History (${owner.payments.length})',
+                      '${LocaleService.code == 'mr' ? 'पेमेंट इतिहास' : (LocaleService.code == 'hi' ? 'भुगतान इतिहास' : 'Payment History')} (${owner.payments.length})',
                       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
                   ],
                 ),
                 const SizedBox(height: 10),
                 if (owner.payments.isEmpty)
-                  const Text('No payments recorded yet.')
+                  Text(LocaleService.code == 'mr' ? 'अद्याप कोणतेही पेमेंट नोंदवलेले नाही.' : (LocaleService.code == 'hi' ? 'अभी तक कोई भुगतान दर्ज नहीं है।' : 'No payments recorded yet.'))
                 else
                   ...owner.payments.map((p) => Card(
                         margin: const EdgeInsets.only(bottom: 10),
@@ -747,24 +779,26 @@ class _LedgerScreenState extends State<LedgerScreen> {
                             child: Icon(Icons.check_rounded, color: AppTheme.successGreen),
                           ),
                           title: Text(
-                            '₹${p.amount.toStringAsFixed(2)} via ${p.paymentMethod}',
+                            '₹${p.amount.toStringAsFixed(2)} (${LocaleService.translatePaymentMethod(p.paymentMethod)})',
                             style: const TextStyle(fontWeight: FontWeight.bold),
                             overflow: TextOverflow.ellipsis,
                           ),
                           subtitle: Text(
-                            'Receipt: ${p.receiptNumber} • ${p.paymentDate}',
+                            '${LocaleService.code == 'mr' ? 'पावती' : (LocaleService.code == 'hi' ? 'रसीद' : 'Receipt')}: ${p.receiptNumber} • ${p.paymentDate}',
                             overflow: TextOverflow.ellipsis,
                           ),
                           trailing: OutlinedButton(
-                            child: const Text('Receipt', style: TextStyle(fontSize: 12)),
+                            child: Text(LocaleService.code == 'mr' ? 'पावती' : (LocaleService.code == 'hi' ? 'रसीद' : 'Receipt'), style: const TextStyle(fontSize: 12)),
                             onPressed: () async {
                               try {
                                 final receipt = await ApiService.getPaymentReceipt(p.paymentId);
                                 _showReceiptDialog(receipt);
                               } catch (e) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Failed: $e'), backgroundColor: AppTheme.alertRed),
-                                );
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Failed: $e'), backgroundColor: AppTheme.alertRed),
+                                  );
+                                }
                               }
                             },
                           ),

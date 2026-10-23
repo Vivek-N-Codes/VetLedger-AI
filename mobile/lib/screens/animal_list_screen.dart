@@ -3,6 +3,7 @@ import '../models/animal.dart';
 import '../models/farm.dart';
 import '../services/api_service.dart';
 import '../services/app_data_sync.dart';
+import '../services/locale_service.dart';
 import '../theme/app_theme.dart';
 import 'animal_profile_screen.dart';
 
@@ -161,17 +162,17 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
                     )
                   else
                     DropdownButtonFormField<int>(
-                      value: selectedFarmId,
+                      initialValue: selectedFarmId,
                       isExpanded: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Belongs to Farm *',
-                        hintText: 'Select farm this animal belongs to...',
-                        prefixIcon: Icon(Icons.agriculture_rounded, color: AppTheme.primaryTeal),
+                      decoration: InputDecoration(
+                        labelText: '${LocaleService.t('farms')} *',
+                        hintText: LocaleService.t('search_farms_hint'),
+                        prefixIcon: const Icon(Icons.agriculture_rounded, color: AppTheme.primaryTeal),
                       ),
                       items: farms.map((f) {
                         final displayName = f.name.isNotEmpty ? f.name : 'Farm #${f.id} (${f.farmCode})';
                         final locationOwner = f.ownerName != null && f.ownerName!.isNotEmpty
-                            ? '${f.villageName} • Owner: ${f.ownerName}'
+                            ? '${f.villageName} • ${LocaleService.code == 'mr' ? 'मालक' : (LocaleService.code == 'hi' ? 'मालिक' : 'Owner')}: ${f.ownerName}'
                             : f.villageName;
                         return DropdownMenuItem<int>(
                           value: f.id,
@@ -188,25 +189,25 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: nameCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Animal Name *',
+                    decoration: InputDecoration(
+                      labelText: '${LocaleService.t('animal_name')} *',
                       hintText: 'e.g., Gauri, Bella',
-                      prefixIcon: Icon(Icons.badge_rounded, color: AppTheme.primaryTeal),
+                      prefixIcon: const Icon(Icons.badge_rounded, color: AppTheme.primaryTeal),
                     ),
                     validator: (v) => (v == null || v.trim().isEmpty) ? 'Name is required' : null,
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
-                    value: species,
-                    decoration: const InputDecoration(
-                      labelText: 'Species *',
-                      prefixIcon: Icon(Icons.category_rounded, color: AppTheme.primaryTeal),
+                    initialValue: species,
+                    decoration: InputDecoration(
+                      labelText: '${LocaleService.t('species')} *',
+                      prefixIcon: const Icon(Icons.category_rounded, color: AppTheme.primaryTeal),
                     ),
-                    items: const [
-                      DropdownMenuItem(value: 'CATTLE', child: Text('Cattle')),
-                      DropdownMenuItem(value: 'BUFFALO', child: Text('Buffalo')),
-                      DropdownMenuItem(value: 'GOAT', child: Text('Goat')),
-                      DropdownMenuItem(value: 'SHEEP', child: Text('Sheep')),
+                    items: [
+                      DropdownMenuItem(value: 'CATTLE', child: Text(LocaleService.translateSpecies('CATTLE'))),
+                      DropdownMenuItem(value: 'BUFFALO', child: Text(LocaleService.translateSpecies('BUFFALO'))),
+                      DropdownMenuItem(value: 'GOAT', child: Text(LocaleService.translateSpecies('GOAT'))),
+                      DropdownMenuItem(value: 'SHEEP', child: Text(LocaleService.translateSpecies('SHEEP'))),
                     ],
                     onChanged: (val) => setDialogState(() => species = val ?? 'CATTLE'),
                   ),
@@ -216,7 +217,7 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
                       Expanded(
                         child: TextFormField(
                           controller: breedCtrl,
-                          decoration: const InputDecoration(labelText: 'Breed', hintText: 'e.g., Murrah'),
+                          decoration: InputDecoration(labelText: LocaleService.t('breed'), hintText: 'e.g., Murrah'),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -224,21 +225,21 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
                         child: TextFormField(
                           controller: ageCtrl,
                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                          decoration: const InputDecoration(labelText: 'Age (Yrs)', hintText: 'e.g., 3.0'),
+                          decoration: InputDecoration(labelText: LocaleService.t('age_years'), hintText: 'e.g., 3.0'),
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
-                    value: sex,
-                    decoration: const InputDecoration(
-                      labelText: 'Sex *',
-                      prefixIcon: Icon(Icons.male_rounded, color: AppTheme.primaryTeal),
+                    initialValue: sex,
+                    decoration: InputDecoration(
+                      labelText: '${LocaleService.t('sex')} *',
+                      prefixIcon: const Icon(Icons.male_rounded, color: AppTheme.primaryTeal),
                     ),
-                    items: const [
-                      DropdownMenuItem(value: 'FEMALE', child: Text('Female')),
-                      DropdownMenuItem(value: 'MALE', child: Text('Male')),
+                    items: [
+                      DropdownMenuItem(value: 'FEMALE', child: Text(LocaleService.translateSex('FEMALE'))),
+                      DropdownMenuItem(value: 'MALE', child: Text(LocaleService.translateSex('MALE'))),
                     ],
                     onChanged: (val) => setDialogState(() => sex = val ?? 'FEMALE'),
                   ),
@@ -312,11 +313,15 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Animal Health Records'),
+        title: Text(
+          LocaleService.code == 'mr'
+              ? 'पशु आरोग्य नोंदी'
+              : (LocaleService.code == 'hi' ? 'पशु स्वास्थ्य रिकॉर्ड' : 'Animal Health Records'),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
-            tooltip: 'Refresh Animals',
+            tooltip: LocaleService.t('refresh'),
             onPressed: _loadAnimals,
           ),
         ],
@@ -325,11 +330,13 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
         backgroundColor: AppTheme.primaryTeal,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add),
-        label: const Text('Register Animal', style: TextStyle(fontWeight: FontWeight.bold)),
+        label: Text(
+          LocaleService.t('register_new_animal'),
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         onPressed: _showRegisterAnimalDialog,
       ),
       body: Column(
-
         children: [
           // Search Bar
           Padding(
@@ -337,7 +344,7 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search by animal code, name, breed, or farm...',
+                hintText: LocaleService.t('search_animals_hint'),
                 prefixIcon: const Icon(Icons.search_rounded, color: AppTheme.textMuted),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
@@ -358,10 +365,11 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
             child: Row(
               children: _villages.map((village) {
                 final isSelected = _selectedVillage == village;
+                final villageLabel = village == 'All' ? LocaleService.t('all_villages') : village;
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
                   child: FilterChip(
-                    label: Text(village),
+                    label: Text(villageLabel),
                     selected: isSelected,
                     showCheckmark: false,
                     selectedColor: AppTheme.primaryLight,
@@ -395,10 +403,11 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
             child: Row(
               children: _species.map((spec) {
                 final isSelected = _selectedSpecies == spec;
+                final specLabel = spec == 'All' ? LocaleService.t('all_species') : LocaleService.translateSpecies(spec);
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
                   child: ChoiceChip(
-                    label: Text(spec),
+                    label: Text(specLabel),
                     selected: isSelected,
                     showCheckmark: false,
                     selectedColor: AppTheme.primaryTeal,
@@ -428,7 +437,11 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Showing ${_filteredAnimals.length} of ${_allAnimals.length} animals',
+                  LocaleService.code == 'mr'
+                      ? 'एकूण ${_allAnimals.length} पैकी ${_filteredAnimals.length} जनावरे दर्शवत आहे'
+                      : (LocaleService.code == 'hi'
+                          ? 'कुल ${_allAnimals.length} में से ${_filteredAnimals.length} पशु दर्शाए गए'
+                          : 'Showing ${_filteredAnimals.length} of ${_allAnimals.length} animals'),
                   style: const TextStyle(fontSize: 12, color: AppTheme.textMuted, fontWeight: FontWeight.w600),
                 ),
               ],
@@ -548,7 +561,9 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      '${animal.totalVisits} visits',
+                      LocaleService.code == 'mr'
+                          ? '${animal.totalVisits} तपासण्या'
+                          : (LocaleService.code == 'hi' ? '${animal.totalVisits} जांच' : '${animal.totalVisits} visits'),
                       style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.textSecondary),
                     ),
                   ),
@@ -559,9 +574,17 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
                 spacing: 8,
                 runSpacing: 4,
                 children: [
-                  _infoChip(Icons.category_outlined, '${animal.species} • ${animal.breed ?? 'Native'}'),
-                  _infoChip(Icons.cake_outlined, '${animal.ageYears ?? 0} yrs'),
-                  _infoChip(Icons.male, animal.sex),
+                  _infoChip(
+                    Icons.category_outlined,
+                    '${LocaleService.translateSpecies(animal.species)} • ${animal.breed ?? (LocaleService.code == 'mr' ? 'गावरान / देशी' : (LocaleService.code == 'hi' ? 'देशी' : 'Native'))}',
+                  ),
+                  _infoChip(
+                    Icons.cake_outlined,
+                    LocaleService.code == 'mr'
+                        ? '${animal.ageYears ?? 0} वर्षे'
+                        : (LocaleService.code == 'hi' ? '${animal.ageYears ?? 0} वर्ष' : '${animal.ageYears ?? 0} yrs'),
+                  ),
+                  _infoChip(Icons.male, LocaleService.translateSex(animal.sex)),
                 ],
               ),
               const SizedBox(height: 8),
@@ -587,7 +610,9 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
                   ),
                   if (animal.lastVisitDate != null)
                     Text(
-                      'Last: ${animal.lastVisitDate}',
+                      LocaleService.code == 'mr'
+                          ? 'शेवटची: ${animal.lastVisitDate}'
+                          : (LocaleService.code == 'hi' ? 'अंतिम: ${animal.lastVisitDate}' : 'Last: ${animal.lastVisitDate}'),
                       style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
                     ),
                 ],
